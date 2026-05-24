@@ -77,6 +77,16 @@ public class DashboardPlugin extends JavaPlugin {
             return true;
         }
 
+        if (args[0].equalsIgnoreCase("reload-ssl")) {
+            if (webServer == null) {
+                sender.sendMessage("§c[Dashboard] §f웹서버가 실행 중이지 않습니다.");
+                return true;
+            }
+            webServer.reloadSsl();
+            sender.sendMessage("§a[Dashboard] §fSSL 인증서 리로드 완료.");
+            return true;
+        }
+
         if (args[0].equalsIgnoreCase("token")) {
             // 랜덤 토큰 생성
             byte[] bytes = new byte[16];
@@ -89,7 +99,7 @@ public class DashboardPlugin extends JavaPlugin {
             return true;
         }
 
-        sender.sendMessage("§c사용법: /dashboard [reload|token]");
+        sender.sendMessage("§c사용법: /dashboard [reload|reload-ssl|token]");
         return true;
     }
 
