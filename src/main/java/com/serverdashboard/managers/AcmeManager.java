@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 public class AcmeManager {
-    private static final String ACME_URL = "acme://letsencrypt.org";
+    private static final String ACME_URL = "https://acme-v02.api.letsencrypt.org/directory";
     public static final int RENEW_BEFORE_DAYS = 30;
 
     private final DashboardPlugin plugin;
