@@ -19,6 +19,9 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("org.shredzone.acme4j:acme4j-client:3.4.0")
+    // slf4j: acme4j 의존성, 로그 출력 없음 (Paper 로거 사용)
+    implementation("org.slf4j:slf4j-nop:2.0.16")
 }
 
 tasks {

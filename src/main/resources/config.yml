@@ -1,12 +1,22 @@
 web:
-  # HTTP 포트 (내부/curl 접근용으로 유지)
+  # HTTP 포트 (내부/API 접근용)
   port: 8080
 
-  # HTTPS 설정 (.dev 도메인 등 HSTS 강제 도메인에 필요)
+  # HTTPS 설정
   https:
     enabled: false
     port: 8443
-    # Let's Encrypt PEM 파일 경로 (절대 경로)
+
+    # ── ACME (Let's Encrypt 자동 발급) ──────────────────
+    acme:
+      enabled: false
+      domain: "mc.example.com"      # 인증서를 발급할 도메인
+      email: "admin@example.com"    # Let's Encrypt 계정 이메일
+      # HTTP-01 챌린지 포트 (반드시 외부에서 80번으로 접근 가능해야 함)
+      # Oracle: NSG + iptables 80/TCP 허용 필요
+      challenge-port: 80
+
+    # ── 수동 인증서 (ACME 비활성 시 사용) ────────────────
     # certbot 기준:
     #   cert: "/etc/letsencrypt/live/도메인/fullchain.pem"
     #   key:  "/etc/letsencrypt/live/도메인/privkey.pem"

@@ -7,7 +7,7 @@ authors: [ServerDashboard]
 commands:
   dashboard:
     description: ServerDashboard management command
-    usage: /dashboard <reload|reload-ssl|token>
+    usage: /dashboard <reload|reload-ssl|cert-issue|token>
     permission: serverdashboard.admin
 permissions:
   serverdashboard.admin:

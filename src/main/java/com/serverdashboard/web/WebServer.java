@@ -116,7 +116,7 @@ public class WebServer {
         );
     }
 
-    /** SSL 인증서 핫 리로드 */
+    /** SSL 인증서 핫 리로드 (ACME 자동 경로 / 수동 경로 모두 지원) */
     public void reloadSsl() {
         if (!plugin.getConfig().getBoolean("web.https.enabled", false)) {
             plugin.getLogger().warning("HTTPS가 비활성화 상태입니다.");
@@ -127,8 +127,15 @@ public class WebServer {
             httpsServer = null;
         }
         int httpsPort = plugin.getConfig().getInt("web.https.port", 8443);
-        String certPath = plugin.getConfig().getString("web.https.cert", "");
-        String keyPath  = plugin.getConfig().getString("web.https.key",  "");
+        String certPath, keyPath;
+        if (plugin.getConfig().getBoolean("web.https.acme.enabled", false)) {
+            // ACME 모드: 플러그인 데이터 폴더의 파일 사용
+            certPath = new File(plugin.getDataFolder(), "fullchain.pem").getAbsolutePath();
+            keyPath  = new File(plugin.getDataFolder(), "privkey.pem").getAbsolutePath();
+        } else {
+            certPath = plugin.getConfig().getString("web.https.cert", "");
+            keyPath  = plugin.getConfig().getString("web.https.key",  "");
+        }
         try {
             startHttps(httpsPort, certPath, keyPath);
             plugin.getLogger().info("SSL 인증서 리로드 완료.");
