@@ -242,6 +242,22 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
 .ann-sep  { color: var(--text-3); }
 .ann-acts { display: flex; gap: 5px; flex-shrink: 0; }
 
+/* ── PLUGIN GRID ─────────────────────────── */
+.plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.plugin-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 14px 15px; display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .12s;
+}
+.plugin-card:hover { border-color: var(--border-2); }
+.plugin-card.disabled { opacity: .55; }
+.plugin-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.plugin-name { font-size: 13.5px; font-weight: 600; }
+.plugin-ver  { font-size: 11px; color: var(--text-2); font-family: var(--mono); }
+.plugin-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; flex: 1; }
+.plugin-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.plugin-authors { font-size: 11px; color: var(--text-3); }
+
 /* ── CONSOLE ─────────────────────────────── */
 .console-outer {
   display: flex; flex-direction: column; flex: 1; min-height: 0;
@@ -385,6 +401,9 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
         </div>
         <div class="nav-item" onclick="nav('console')" data-nav="console">
           <i class="ti ti-terminal-2"></i> Console
+        </div>
+        <div class="nav-item" onclick="nav('plugins')" data-nav="plugins">
+          <i class="ti ti-puzzle"></i> Plugins
         </div>
       </div>
     </nav>
@@ -566,6 +585,22 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
       </section>
     </div>
 
+    <!-- ── PLUGINS ────────────────────────── -->
+    <div id="ph-plugins" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">Plugins</div>
+        <div class="page-sub">Manage server plugins</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadPlugins()"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-plugins" style="display:none">
+      <section class="section active" id="section-plugins">
+        <div id="pluginList"><div class="empty"><i class="ti ti-loader"></i><p>Loading...</p></div></div>
+      </section>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app -->
 
@@ -685,7 +720,7 @@ function init() {
 }
 
 /* ── NAVIGATION ────────────────────────── */
-const SECTIONS = ['status','players','bans','announcements','console'];
+const SECTIONS = ['status','players','bans','announcements','console','plugins'];
 function nav(section) {
   SECTIONS.forEach(s => {
     const ph = $('ph-' + s), sa = $('sa-' + s), ni = document.querySelector(`[data-nav="${s}"]`);
@@ -704,6 +739,7 @@ function nav(section) {
   if (section === 'status')        loadStatus();
   if (section === 'console')       startLogPoll();
   else                             stopLogPoll();
+  if (section === 'plugins')       loadPlugins();
 }
 (function() {
   SECTIONS.forEach(s => { const ph=$('ph-'+s),sa=$('sa-'+s); if(ph)ph.style.display='none'; if(sa)sa.style.display='none'; });
@@ -946,6 +982,57 @@ async function delAnn(id) {
   const r=await api('DELETE',`/announcements/${id}`);
   if(r.ok){toast('Deleted.','success');loadAnnouncements();}
   else toast(r.data?.error||'Delete failed','error');
+}
+
+/* ── PLUGINS ───────────────────────────── */
+async function loadPlugins() {
+  const el = $('pluginList');
+  const r = await api('GET', '/plugins');
+  if (!r.ok) {
+    el.innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:var(--red)">Load failed</p></div>`;
+    return;
+  }
+  const plugins = r.data.slice().sort((a, b) => a.name.localeCompare(b.name));
+  if (!plugins.length) {
+    el.innerHTML = `<div class="empty"><i class="ti ti-puzzle"></i><p>No plugins found.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="plugin-grid">${plugins.map(p => {
+    const authors = p.authors?.length ? p.authors.join(', ') : '—';
+    const sb = p.enabled
+      ? '<span class="badge badge-green">Enabled</span>'
+      : '<span class="badge badge-red">Disabled</span>';
+    const selfNote = p.self ? '<span class="badge badge-purple" style="margin-left:4px">self</span>' : '';
+    const disableBtn = p.self
+      ? `<button class="btn btn-ghost btn-xs" disabled title="Cannot disable self"><i class="ti ti-ban"></i></button>`
+      : p.enabled
+        ? `<button class="btn btn-danger btn-xs" onclick="pluginAction('${esc(p.name)}','disable')" title="Disable"><i class="ti ti-player-stop"></i></button>`
+        : `<button class="btn btn-ghost btn-xs" onclick="pluginAction('${esc(p.name)}','enable')" title="Enable"><i class="ti ti-player-play"></i></button>`;
+    const reloadBtn = p.self
+      ? `<button class="btn btn-ghost btn-xs" disabled title="Cannot reload self"><i class="ti ti-refresh"></i></button>`
+      : `<button class="btn btn-ghost btn-xs" onclick="pluginAction('${esc(p.name)}','reload')" title="Reload"><i class="ti ti-refresh"></i></button>`;
+    return `<div class="plugin-card${p.enabled ? '' : ' disabled'}">
+      <div class="plugin-top">
+        <div>
+          <div class="plugin-name">${esc(p.name)}${selfNote}</div>
+          <div class="plugin-ver">v${esc(p.version)}</div>
+        </div>
+        ${sb}
+      </div>
+      ${p.description ? `<div class="plugin-desc">${esc(p.description)}</div>` : ''}
+      <div class="plugin-foot">
+        <span class="plugin-authors"><i class="ti ti-user" style="font-size:11px"></i> ${esc(authors)}</span>
+        <div class="btn-grp">${disableBtn}${reloadBtn}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function pluginAction(name, action) {
+  const label = { enable: 'Enabling', disable: 'Disabling', reload: 'Reloading' }[action];
+  const r = await api('POST', `/plugins/${encodeURIComponent(name)}/${action}`);
+  if (r.ok) { toast(`${name}: ${action}d.`, 'success'); loadPlugins(); }
+  else toast(r.data?.error || `${label} failed`, 'error');
 }
 
 /* ── MODAL ─────────────────────────────── */

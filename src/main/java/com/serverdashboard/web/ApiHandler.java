@@ -90,6 +90,14 @@ public class ApiHandler implements HttpHandler {
             handleGetLogs(ex);
         } else if (path.equals("/console") && method.equals("POST")) {
             handleConsole(ex);
+        } else if (path.equals("/plugins") && method.equals("GET")) {
+            handleGetPlugins(ex);
+        } else if (path.matches("/plugins/[^/]+/enable") && method.equals("POST")) {
+            handlePluginAction(ex, path.split("/")[2], "enable");
+        } else if (path.matches("/plugins/[^/]+/disable") && method.equals("POST")) {
+            handlePluginAction(ex, path.split("/")[2], "disable");
+        } else if (path.matches("/plugins/[^/]+/reload") && method.equals("POST")) {
+            handlePluginAction(ex, path.split("/")[2], "reload");
         } else {
             send(ex, 404, obj("error", "Not Found"));
         }
@@ -297,7 +305,46 @@ public class ApiHandler implements HttpHandler {
         send(ex, 200, obj("message", "Command executed."));
     }
 
-    // --- 유틸리티 ---
+    private void handleGetPlugins(HttpExchange ex) throws Exception {
+        JsonArray result = runOnMain(() -> {
+            JsonArray a = new JsonArray();
+            for (org.bukkit.plugin.Plugin p : Bukkit.getPluginManager().getPlugins()) {
+                JsonObject o = new JsonObject();
+                o.addProperty("name", p.getName());
+                o.addProperty("version", p.getDescription().getVersion());
+                o.addProperty("description", p.getDescription().getDescription() != null
+                        ? p.getDescription().getDescription() : "");
+                JsonArray authors = new JsonArray();
+                p.getDescription().getAuthors().forEach(authors::add);
+                o.add("authors", authors);
+                o.addProperty("enabled", p.isEnabled());
+                o.addProperty("self", p.getName().equals(plugin.getName()));
+                a.add(o);
+            }
+            return a;
+        });
+        send(ex, 200, result);
+    }
+
+    private void handlePluginAction(HttpExchange ex, String name, String action) throws Exception {
+        Boolean ok = runOnMain(() -> {
+            org.bukkit.plugin.Plugin target = Bukkit.getPluginManager().getPlugin(name);
+            if (target == null) return null;
+            switch (action) {
+                case "enable"  -> Bukkit.getPluginManager().enablePlugin(target);
+                case "disable" -> Bukkit.getPluginManager().disablePlugin(target);
+                case "reload"  -> {
+                    Bukkit.getPluginManager().disablePlugin(target);
+                    Bukkit.getPluginManager().enablePlugin(target);
+                }
+            }
+            return true;
+        });
+        if (ok == null) send(ex, 404, obj("error", "Plugin not found: " + name));
+        else send(ex, 200, obj("message", name + " " + action + "d."));
+    }
+
+    // --- utilities ---
 
     private <T> T runOnMain(java.util.concurrent.Callable<T> task) throws Exception {
         CompletableFuture<T> future = new CompletableFuture<>();
