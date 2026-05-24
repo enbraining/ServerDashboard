@@ -1,6 +1,5 @@
 plugins {
     java
-    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "com.serverdashboard"
@@ -23,18 +22,33 @@ dependencies {
 }
 
 tasks {
-    shadowJar {
-        relocate("com.google.gson", "com.serverdashboard.libs.gson")
-        archiveClassifier.set("")
-        archiveBaseName.set("ServerDashboard")
+    compileJava {
+        options.encoding = "UTF-8"
+        options.release.set(21)
     }
-    build {
-        dependsOn(shadowJar)
-    }
+
     jar {
         enabled = false
     }
-    compileJava {
-        options.encoding = "UTF-8"
+
+    register<Jar>("shadowJar") {
+        group = "build"
+        description = "Assembles a fat JAR including runtime dependencies."
+        archiveBaseName.set("ServerDashboard")
+        archiveVersion.set(project.version.toString())
+        archiveClassifier.set("")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        // 컴파일된 클래스 + 리소스
+        from(sourceSets.main.get().output)
+        // 런타임 의존성(Gson 등) 포함
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+
+        // Gson 패키지 재배치 (ManifestTransformer 없이 직접 수행 불필요 — Paper는 자체 Gson 보유)
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    }
+
+    build {
+        dependsOn(named("shadowJar"))
     }
 }
