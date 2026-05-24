@@ -711,6 +711,7 @@ async function api(method, path, body) {
 /* ── INIT ──────────────────────────────── */
 function init() {
   loadStatus(); loadPlayers(); loadBans(); loadAnnouncements();
+  loadModules();
   setConn(true);
   clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
@@ -721,6 +722,7 @@ function init() {
 
 /* ── NAVIGATION ────────────────────────── */
 const SECTIONS = ['status','players','bans','announcements','console','plugins'];
+function navTo(section) { nav(section); }
 function nav(section) {
   SECTIONS.forEach(s => {
     const ph = $('ph-' + s), sa = $('sa-' + s), ni = document.querySelector(`[data-nav="${s}"]`);
@@ -982,6 +984,61 @@ async function delAnn(id) {
   const r=await api('DELETE',`/announcements/${id}`);
   if(r.ok){toast('Deleted.','success');loadAnnouncements();}
   else toast(r.data?.error||'Delete failed','error');
+}
+
+/* ── MODULES ───────────────────────────── */
+async function loadModules() {
+  const r = await api('GET', '/modules');
+  if (!r.ok || !r.data.length) return;
+
+  const mainEl  = document.querySelector('.main');
+  let modGroup  = document.getElementById('nav-group-modules');
+  if (!modGroup) {
+    modGroup = document.createElement('div');
+    modGroup.className = 'nav-group';
+    modGroup.id = 'nav-group-modules';
+    modGroup.innerHTML = '<div class="nav-group-label">Modules</div>';
+    document.querySelector('.nav').appendChild(modGroup);
+  }
+
+  for (const m of r.data) {
+    if (SECTIONS.includes(m.id)) continue;
+    SECTIONS.push(m.id);
+
+    // nav item
+    const ni = document.createElement('div');
+    ni.className = 'nav-item';
+    ni.setAttribute('data-nav', m.id);
+    ni.innerHTML = `<i class="ti ${esc(m.icon)}"></i> ${esc(m.name)}`;
+    ni.onclick = () => navTo(m.id);
+    modGroup.appendChild(ni);
+
+    // page header
+    const ph = document.createElement('div');
+    ph.id = 'ph-' + m.id;
+    ph.className = 'page-head';
+    ph.style.display = 'none';
+    ph.innerHTML = `<div><div class="page-title">${esc(m.name)}</div></div>`;
+    mainEl.appendChild(ph);
+
+    // scroll area + section
+    const sa = document.createElement('div');
+    sa.id = 'sa-' + m.id;
+    sa.className = 'scroll-area';
+    sa.style.display = 'none';
+    const sec = document.createElement('section');
+    sec.className = 'section active';
+    sec.id = 'section-' + m.id;
+    sec.innerHTML = m.html;
+    sa.appendChild(sec);
+    mainEl.appendChild(sa);
+
+    // run module init script
+    if (m.script) {
+      try { new Function(m.script)(); }
+      catch (e) { console.error('[Module ' + m.id + '] Script error:', e); }
+    }
+  }
 }
 
 /* ── PLUGINS ───────────────────────────── */

@@ -3,6 +3,7 @@ package com.serverdashboard;
 import com.serverdashboard.managers.AcmeManager;
 import com.serverdashboard.managers.AnnouncementManager;
 import com.serverdashboard.managers.LogManager;
+import com.serverdashboard.managers.ModuleManager;
 import com.serverdashboard.web.WebServer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -22,6 +23,7 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
     private AnnouncementManager announcementManager;
     private AcmeManager acmeManager;
     private LogManager logManager;
+    private ModuleManager moduleManager;
 
     @Override
     public void onEnable() {
@@ -57,6 +59,11 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
             getLogger().info("[ACME] Auto-renewal scheduler started (renews " + AcmeManager.RENEW_BEFORE_DAYS + " days before expiry)");
         }
 
+        moduleManager = new ModuleManager(this);
+        moduleManager.loadAll();
+        if (moduleManager.count() > 0)
+            getLogger().info("[Modules] " + moduleManager.count() + " module(s) loaded.");
+
         Bukkit.getPluginManager().registerEvents(this, this);
         announcementManager.startAll();
         getLogger().info("ServerDashboard plugin enabled.");
@@ -64,6 +71,7 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (moduleManager != null) moduleManager.unloadAll();
         if (logManager != null) logManager.stop();
         if (webServer != null) webServer.stop();
         if (announcementManager != null) {
@@ -149,6 +157,12 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
                     }
                 });
             }
+            case "reload-modules" -> {
+                int before = moduleManager.count();
+                moduleManager.reloadAll();
+                int after = moduleManager.count();
+                sender.sendMessage("§a[Dashboard] §fModules reloaded: " + before + " → " + after + " module(s).");
+            }
             case "token" -> {
                 byte[] bytes = new byte[16];
                 new SecureRandom().nextBytes(bytes);
@@ -158,7 +172,7 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
                 sender.sendMessage("§a[Dashboard] §fNew token: §e" + newToken);
                 sender.sendMessage("§cRestart the web server for the change to take effect.");
             }
-            default -> sender.sendMessage("§cUsage: /dashboard [reload|reload-ssl|cert-issue|token]");
+            default -> sender.sendMessage("§cUsage: /dashboard [reload|reload-ssl|reload-modules|cert-issue|token]");
         }
         return true;
     }
@@ -175,4 +189,5 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
     public AnnouncementManager getAnnouncementManager() { return announcementManager; }
     public AcmeManager getAcmeManager() { return acmeManager; }
     public LogManager getLogManager() { return logManager; }
+    public ModuleManager getModuleManager() { return moduleManager; }
 }

@@ -2,6 +2,7 @@ package com.serverdashboard.web;
 
 import com.google.gson.*;
 import com.serverdashboard.DashboardPlugin;
+import com.serverdashboard.api.DashboardModule;
 import com.serverdashboard.managers.AnnouncementManager;
 import com.serverdashboard.models.Announcement;
 import com.sun.net.httpserver.HttpExchange;
@@ -98,6 +99,10 @@ public class ApiHandler implements HttpHandler {
             handlePluginAction(ex, path.split("/")[2], "disable");
         } else if (path.matches("/plugins/[^/]+/reload") && method.equals("POST")) {
             handlePluginAction(ex, path.split("/")[2], "reload");
+        } else if (path.equals("/modules") && method.equals("GET")) {
+            handleGetModules(ex);
+        } else if (path.startsWith("/module/")) {
+            handleModuleRoute(ex, method, path.substring("/module/".length()));
         } else {
             send(ex, 404, obj("error", "Not Found"));
         }
@@ -342,6 +347,38 @@ public class ApiHandler implements HttpHandler {
         });
         if (ok == null) send(ex, 404, obj("error", "Plugin not found: " + name));
         else send(ex, 200, obj("message", name + " " + action + "d."));
+    }
+
+    private void handleGetModules(HttpExchange ex) throws IOException {
+        JsonArray arr = new JsonArray();
+        for (DashboardModule m : plugin.getModuleManager().getAll()) {
+            JsonObject o = new JsonObject();
+            o.addProperty("id", m.getId());
+            o.addProperty("name", m.getName());
+            o.addProperty("icon", m.getIcon());
+            o.addProperty("html", m.getSectionHtml());
+            o.addProperty("script", m.getInitScript());
+            arr.add(o);
+        }
+        send(ex, 200, arr);
+    }
+
+    private void handleModuleRoute(HttpExchange ex, String method, String remainder) throws Exception {
+        int slash = remainder.indexOf('/');
+        String moduleId = slash == -1 ? remainder : remainder.substring(0, slash);
+        String subPath  = slash == -1 ? "/" : remainder.substring(slash);
+
+        DashboardModule m = plugin.getModuleManager().get(moduleId);
+        if (m == null) {
+            send(ex, 404, obj("error", "Module not found: " + moduleId));
+            return;
+        }
+        try {
+            m.handleRoute(subPath, method, ex);
+        } catch (Exception e) {
+            plugin.getLogger().warning("[Modules] Route error in '" + moduleId + "': " + e.getMessage());
+            send(ex, 500, obj("error", e.getMessage()));
+        }
     }
 
     // --- utilities ---
