@@ -4,332 +4,543 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Server Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3250;
-    --accent: #5865f2;
-    --accent-hover: #4752c4;
-    --green: #57f287;
-    --red: #ed4245;
-    --yellow: #faa61a;
-    --text: #e3e5e8;
-    --text-muted: #8b8fa8;
-    --danger: #ed4245;
-    --font: 'Segoe UI', system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+:root {
+  --bg:          #0b0b0f;
+  --surface:     #111118;
+  --surface-2:   #17171f;
+  --surface-3:   #1d1d28;
+  --border:      #1e1e2a;
+  --border-2:    #28283a;
+  --accent:      #6366f1;
+  --accent-h:    #5254cc;
+  --accent-2:    #a5b4fc;
+  --accent-dim:  rgba(99,102,241,.13);
+  --green:       #22c55e;
+  --green-dim:   rgba(34,197,94,.12);
+  --red:         #ef4444;
+  --red-dim:     rgba(239,68,68,.12);
+  --yellow:      #f59e0b;
+  --yellow-dim:  rgba(245,158,11,.12);
+  --text:        #f0f0f5;
+  --text-2:      #7c7c9a;
+  --text-3:      #3e3e55;
+  --font:        'Inter', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', 'Consolas', monospace;
+  --r:           8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--font);
+  font-size: 13.5px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
 
-  /* LAYOUT */
-  .app { display: flex; min-height: 100vh; }
-  .sidebar {
-    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; padding: 1rem 0; flex-shrink: 0; position: fixed; height: 100vh;
-  }
-  .main { margin-left: 220px; flex: 1; padding: 2rem; max-width: 1200px; }
+/* ── LAYOUT ─────────────────────────────────────── */
+.app { display: flex; height: 100vh; overflow: hidden; }
 
-  /* SIDEBAR */
-  .logo { padding: 0.5rem 1.2rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
-  .logo h1 { font-size: 1rem; font-weight: 700; color: var(--accent); letter-spacing: .5px; }
-  .logo p { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.2rem;
-    cursor: pointer; border-radius: 6px; margin: 0 0.5rem 2px; transition: background .15s;
-    font-size: 0.88rem; color: var(--text-muted); user-select: none;
-  }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: var(--accent); color: #fff; }
-  .nav-item .icon { font-size: 1.1rem; }
-  .sidebar-bottom { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; }
-  .server-info { font-size: 0.75rem; color: var(--text-muted); }
+/* ── SIDEBAR ────────────────────────────────────── */
+.sidebar {
+  width: 220px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  height: 100%; overflow-y: auto;
+}
+.logo {
+  padding: 18px 14px 14px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.logo-box {
+  width: 30px; height: 30px; border-radius: 7px; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+}
+.logo-name { font-size: 14px; font-weight: 700; letter-spacing: -.3px; }
+.logo-ver  { font-size: 11px; color: var(--text-2); margin-top: 1px; font-family: var(--mono); }
 
-  /* TOKEN MODAL */
-  .token-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex;
-    align-items: center; justify-content: center; z-index: 1000;
-  }
-  .token-box {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 2rem; width: 360px; text-align: center;
-  }
-  .token-box h2 { margin-bottom: 1rem; font-size: 1.2rem; }
-  .token-box p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem; }
+.nav { padding: 8px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label {
+  font-size: 10.5px; font-weight: 600; color: var(--text-3); text-transform: uppercase;
+  letter-spacing: .7px; padding: 6px 8px 3px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 8px; padding: 6.5px 9px;
+  border-radius: 6px; cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 500;
+  transition: background .12s, color .12s; user-select: none; margin-bottom: 1px;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent-2); }
+.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
 
-  /* SECTIONS */
-  .section { display: none; }
-  .section.active { display: block; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-  .section-header h2 { font-size: 1.3rem; font-weight: 600; }
+.sidebar-foot {
+  padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.conn { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2); }
+.conn-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex-shrink: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.conn-dot.on  { background: var(--green); box-shadow: 0 0 5px rgba(34,197,94,.5); }
+.conn-dot.off { background: var(--red); }
 
-  /* CARDS & TABLES */
-  .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    overflow: hidden; margin-bottom: 1.5rem;
-  }
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    background: var(--surface2); text-align: left; padding: 0.65rem 1rem;
-    font-size: 0.78rem; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-  }
-  td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.025); }
+/* ── MAIN ───────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
-  /* STAT CARDS */
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.2rem; text-align: center;
-  }
-  .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
-  .stat-card .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+.page-head {
+  padding: 22px 28px 0; flex-shrink: 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.page-title { font-size: 19px; font-weight: 700; letter-spacing: -.5px; }
+.page-sub   { font-size: 12.5px; color: var(--text-2); margin-top: 2px; }
+.page-acts  { display: flex; gap: 7px; }
 
-  /* BUTTONS */
-  .btn {
-    padding: 0.4rem 0.85rem; border: none; border-radius: 6px; cursor: pointer;
-    font-size: 0.82rem; font-weight: 500; transition: filter .15s, transform .1s; display: inline-flex; align-items: center; gap: 4px;
-  }
-  .btn:active { transform: scale(.97); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { filter: brightness(1.15); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-danger:hover { filter: brightness(1.15); }
-  .btn-warn { background: var(--yellow); color: #000; }
-  .btn-warn:hover { filter: brightness(1.1); }
-  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
-  .btn-group { display: flex; gap: 6px; }
+.scroll-area { flex: 1; overflow-y: auto; min-height: 0; padding: 18px 28px 28px; }
+.scroll-area.no-scroll { overflow: hidden; display: flex; flex-direction: column; }
 
-  /* FORMS */
-  .form-group { margin-bottom: 1rem; }
-  label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 5px; }
-  input, textarea, select {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text); padding: 0.5rem 0.75rem; font-size: 0.88rem; font-family: inherit;
-    transition: border-color .15s;
-  }
-  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 80px; }
+/* ── SECTION ────────────────────────────────────── */
+.section { display: none; }
+.section.active { display: block; }
+.section.active.fill { display: flex; flex-direction: column; height: 100%; }
 
-  /* MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
-    align-items: center; justify-content: center; z-index: 500;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 1.8rem; width: 440px; max-width: 95vw;
-  }
-  .modal h3 { margin-bottom: 1.2rem; font-size: 1.1rem; }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.2rem; }
+/* ── STAT GRID ──────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 14px 16px; transition: border-color .15s;
+}
+.stat-card:hover { border-color: var(--border-2); }
+.stat-top   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.stat-label { font-size: 11.5px; font-weight: 500; color: var(--text-2); }
+.stat-ico   { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.stat-ico.purple { background: var(--accent-dim); }
+.stat-ico.green  { background: var(--green-dim); }
+.stat-ico.red    { background: var(--red-dim); }
+.stat-ico.yellow { background: var(--yellow-dim); }
+.stat-val  { font-size: 26px; font-weight: 700; letter-spacing: -1px; font-family: var(--mono); }
+.stat-hint { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
-  /* BADGE */
-  .badge {
-    display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
-  }
-  .badge-green { background: rgba(87,242,135,.15); color: var(--green); }
-  .badge-red { background: rgba(237,66,69,.15); color: var(--red); }
-  .badge-yellow { background: rgba(250,166,26,.15); color: var(--yellow); }
+/* ── CARD ───────────────────────────────────────── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 12px; }
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.card-title { font-size: 13px; font-weight: 600; }
+.card-body  { padding: 14px 16px; }
 
-  /* ANNOUNCEMENT CARD */
-  .ann-card {
-    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-    padding: 1rem 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem;
-  }
-  .ann-body { flex: 1; }
-  .ann-msg { font-size: 0.92rem; margin-bottom: 6px; word-break: break-all; }
-  .ann-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; }
-  .ann-actions { display: flex; gap: 6px; flex-shrink: 0; }
+/* ── TABLE ──────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: var(--surface-2); text-align: left; padding: 9px 16px;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-2); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,.016); }
 
-  /* TOGGLE */
-  .toggle {
-    position: relative; width: 40px; height: 22px; cursor: pointer;
-  }
-  .toggle input { display: none; }
-  .toggle-track {
-    position: absolute; inset: 0; background: var(--border); border-radius: 99px; transition: background .2s;
-  }
-  .toggle-thumb {
-    position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
-    background: #fff; border-radius: 50%; transition: transform .2s;
-  }
-  input:checked + .toggle-track { background: var(--accent); }
-  input:checked ~ .toggle-thumb { transform: translateX(18px); }
+/* ── BUTTONS ────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px;
+  border: 1px solid transparent; border-radius: 6px; font-size: 12.5px; font-weight: 500;
+  cursor: pointer; font-family: var(--font); transition: all .12s; white-space: nowrap; line-height: 1;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
+.btn-ghost   { background: transparent; color: var(--text-2); border-color: var(--border-2); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-danger  { background: var(--red-dim); color: var(--red); border-color: rgba(239,68,68,.25); }
+.btn-danger:hover { background: rgba(239,68,68,.2); }
+.btn-warn    { background: var(--yellow-dim); color: var(--yellow); border-color: rgba(245,158,11,.25); }
+.btn-warn:hover { background: rgba(245,158,11,.2); }
+.btn-sm { padding: 4px 9px; font-size: 12px; }
+.btn-xs { padding: 3px 7px; font-size: 11px; }
+.btn-grp { display: flex; gap: 6px; }
 
-  /* PING */
-  .ping-bar { display: inline-block; width: 6px; height: 14px; border-radius: 2px; margin-right: 2px; vertical-align: middle; }
-  .ping-good { background: var(--green); }
-  .ping-ok { background: var(--yellow); }
-  .ping-bad { background: var(--red); }
+/* ── BADGE ──────────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; padding: 1.5px 7px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.badge-green  { background: var(--green-dim);  color: var(--green); }
+.badge-red    { background: var(--red-dim);    color: var(--red); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+.badge-purple { background: var(--accent-dim); color: var(--accent-2); }
 
-  /* MISC */
-  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
-  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-  .color-preview {
-    display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;
-    background: var(--surface2); font-family: monospace;
-  }
-  .alert { padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; }
-  .alert-error { background: rgba(237,66,69,.15); border: 1px solid rgba(237,66,69,.3); color: var(--red); }
-  .alert-success { background: rgba(87,242,135,.15); border: 1px solid rgba(87,242,135,.3); color: var(--green); }
-  #toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .toast-item {
-    padding: 0.7rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
-    animation: slideIn .25s ease; max-width: 320px;
-  }
-  .toast-item.success { background: #23453a; color: var(--green); border: 1px solid rgba(87,242,135,.3); }
-  .toast-item.error { background: #452329; color: var(--red); border: 1px solid rgba(237,66,69,.3); }
-  @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-  .refresh-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; padding: 4px; transition: color .15s; }
-  .refresh-btn:hover { color: var(--accent); }
-  .mc-color { font-family: monospace; font-size: 0.78rem; color: var(--text-muted); }
+/* ── FORMS ──────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-g { margin-bottom: 12px; }
+.form-g:last-child { margin-bottom: 0; }
+.form-label { display: block; font-size: 11.5px; font-weight: 500; color: var(--text-2); margin-bottom: 5px; }
+.form-ctrl {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 6px; color: var(--text); padding: 7px 10px; font-size: 13px;
+  font-family: var(--font); transition: border-color .12s;
+}
+.form-ctrl:focus { outline: none; border-color: var(--accent); }
+textarea.form-ctrl { resize: vertical; min-height: 70px; }
+
+/* ── TOGGLE ─────────────────────────────────────── */
+.toggle-row { display: flex; align-items: center; gap: 9px; }
+.toggle { position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
+.toggle input { display: none; }
+.tgl-track { position: absolute; inset: 0; background: var(--border-2); border-radius: 99px; transition: background .18s; }
+.tgl-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform .18s; }
+input:checked + .tgl-track { background: var(--accent); }
+input:checked ~ .tgl-thumb { transform: translateX(16px); }
+
+/* ── MODAL ──────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.72);
+  backdrop-filter: blur(3px); display: none;
+  align-items: center; justify-content: center; z-index: 500;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 12px; width: 460px; max-width: 95vw; overflow: hidden;
+}
+.modal-head { padding: 17px 20px 14px; border-bottom: 1px solid var(--border); }
+.modal-title { font-size: 14.5px; font-weight: 600; }
+.modal-body { padding: 18px 20px; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 20px 17px; }
+
+/* ── TOKEN SCREEN ───────────────────────────────── */
+.tok-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+.tok-overlay.show { display: flex; }
+.tok-card {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 16px; padding: 32px; width: 370px; max-width: 95vw;
+}
+.tok-logo { font-size: 26px; margin-bottom: 4px; }
+.tok-title { font-size: 21px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 6px; }
+.tok-sub   { font-size: 13px; color: var(--text-2); margin-bottom: 22px; line-height: 1.6; }
+
+/* ── ANNOUNCEMENTS ──────────────────────────────── */
+.ann-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 13px 15px;
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 8px; transition: border-color .12s;
+}
+.ann-card:hover { border-color: var(--border-2); }
+.ann-body { flex: 1; min-width: 0; }
+.ann-msg  { font-size: 13px; margin-bottom: 7px; word-break: break-all; }
+.ann-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-2); }
+.ann-sep  { color: var(--text-3); }
+.ann-acts { display: flex; gap: 5px; flex-shrink: 0; }
+
+/* ── CONSOLE ────────────────────────────────────── */
+.console-outer {
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+  background: #08080d; border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+}
+.console-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.console-bar-left  { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); font-weight: 500; }
+.console-bar-right { display: flex; gap: 6px; }
+.console-out {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.75;
+  min-height: 0;
+  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+}
+.console-out::-webkit-scrollbar { width: 5px; }
+.console-out::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+.log-line { display: flex; gap: 8px; }
+.log-t    { color: var(--text-3); flex-shrink: 0; user-select: none; }
+.log-lv   { flex-shrink: 0; width: 50px; font-weight: 500; }
+.log-lv.INFO    { color: #4a4a6a; }
+.log-lv.WARN, .log-lv.WARNING { color: var(--yellow); }
+.log-lv.SEVERE, .log-lv.ERROR { color: var(--red); }
+.log-m    { color: #bbbbd0; white-space: pre-wrap; word-break: break-all; flex: 1; }
+.log-m.WARN, .log-m.WARNING { color: #fde68a; }
+.log-m.SEVERE, .log-m.ERROR { color: #fca5a5; }
+.console-input-row {
+  display: flex; align-items: center;
+  border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
+}
+.console-prompt { padding: 0 12px; color: var(--accent-2); font-family: var(--mono); font-size: 13px; flex-shrink: 0; user-select: none; }
+.console-in {
+  flex: 1; background: transparent; border: none; color: var(--text);
+  font-family: var(--mono); font-size: 13px; padding: 10px 0;
+  outline: none; caret-color: var(--accent-2);
+}
+.console-send {
+  padding: 0 14px; height: 40px; background: transparent; border: none;
+  border-left: 1px solid var(--border); color: var(--text-2); cursor: pointer;
+  display: flex; align-items: center; font-size: 15px; transition: color .12s;
+}
+.console-send:hover { color: var(--accent-2); }
+
+/* ── TOAST ──────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 18px; right: 18px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 6px;
+}
+.toast-item {
+  padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  animation: slideIn .2s ease; max-width: 300px;
+}
+.toast-item.success { background: #0c2418; color: var(--green); border: 1px solid rgba(34,197,94,.22); }
+.toast-item.error   { background: #240c0c; color: var(--red);   border: 1px solid rgba(239,68,68,.22); }
+@keyframes slideIn { from { transform:translateX(16px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+/* ── MISC ───────────────────────────────────────── */
+.empty { text-align:center; padding: 36px 16px; color: var(--text-2); }
+.empty-ico { font-size: 28px; margin-bottom: 10px; }
+.empty p   { font-size: 13px; color: var(--text-2); }
+.mono { font-family: var(--mono); }
+code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); padding: 1px 5px; border-radius: 4px; }
+.sep  { color: var(--text-3); }
+
+/* ping bars */
+.ping { display:inline-flex; align-items:center; gap:5px; }
+.pb   { display:inline-flex; gap:2px; align-items:flex-end; }
+.pb span { width:3px; border-radius:1px; display:inline-block; }
+.pb span:nth-child(1) { height:5px; }
+.pb span:nth-child(2) { height:9px; }
+.pb span:nth-child(3) { height:13px; }
+.pg  span { background: var(--green); }
+.py  span { background: var(--yellow); }
+.pr  span { background: var(--red); }
+.pd  span { background: var(--border-2); }
+
+/* info row */
+.info-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.info-item label { font-size:11px; font-weight:500; color:var(--text-2); display:block; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px; }
+.info-item p { font-size:13px; font-family: var(--mono); }
 </style>
 </head>
 <body>
 
-<!-- TOKEN SETUP -->
-<div class="token-overlay" id="tokenOverlay">
-  <div class="token-box">
-    <h2>🔐 API 토큰 입력</h2>
-    <p>config.yml 에 설정된 <code>web.token</code> 값을 입력하세요.</p>
-    <div class="form-group">
-      <input type="password" id="tokenInput" placeholder="API 토큰..." autocomplete="off">
+<!-- TOKEN SCREEN -->
+<div class="tok-overlay show" id="tokScreen">
+  <div class="tok-card">
+    <div class="tok-logo">⛏</div>
+    <div class="tok-title">Server Dashboard</div>
+    <div class="tok-sub">config.yml에 설정된 <code>web.token</code> 값을 입력하세요.</div>
+    <div class="form-g">
+      <label class="form-label">API 토큰</label>
+      <input class="form-ctrl" type="password" id="tokInput" placeholder="토큰 입력..." autocomplete="off">
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="setToken()">접속</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:9px" onclick="setToken()">접속</button>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div class="app">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">
-      <h1>⛏ Server Dashboard</h1>
-      <p id="sidebarVersion">로딩 중...</p>
+      <div class="logo-box">⛏</div>
+      <div>
+        <div class="logo-name">ServerDashboard</div>
+        <div class="logo-ver" id="sideVer">—</div>
+      </div>
     </div>
-    <nav>
-      <div class="nav-item active" onclick="navigate('status')" data-nav="status">
-        <span class="icon">📊</span> 서버 상태
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-group-label">일반</div>
+        <div class="nav-item active" onclick="nav('status')" data-nav="status">
+          <span class="nav-icon">📊</span> 서버 상태
+        </div>
+        <div class="nav-item" onclick="nav('players')" data-nav="players">
+          <span class="nav-icon">👥</span> 플레이어
+        </div>
       </div>
-      <div class="nav-item" onclick="navigate('players')" data-nav="players">
-        <span class="icon">👥</span> 플레이어
-      </div>
-      <div class="nav-item" onclick="navigate('bans')" data-nav="bans">
-        <span class="icon">🚫</span> 밴 목록
-      </div>
-      <div class="nav-item" onclick="navigate('announcements')" data-nav="announcements">
-        <span class="icon">📢</span> 공지 관리
+      <div class="nav-group">
+        <div class="nav-group-label">관리</div>
+        <div class="nav-item" onclick="nav('bans')" data-nav="bans">
+          <span class="nav-icon">🚫</span> 밴 목록
+        </div>
+        <div class="nav-item" onclick="nav('announcements')" data-nav="announcements">
+          <span class="nav-icon">📢</span> 공지 관리
+        </div>
+        <div class="nav-item" onclick="nav('console')" data-nav="console">
+          <span class="nav-icon">🖥</span> 콘솔
+        </div>
       </div>
     </nav>
-    <div class="sidebar-bottom">
-      <div class="server-info">
-        <span class="status-dot" id="connDot"></span>
-        <span id="connStatus">연결 중...</span>
+    <div class="sidebar-foot">
+      <div class="conn">
+        <div class="conn-dot" id="connDot"></div>
+        <span id="connTxt">연결 중...</span>
       </div>
     </div>
   </aside>
 
-  <main class="main">
-    <!-- STATUS -->
-    <section class="section active" id="section-status">
-      <div class="section-header">
-        <h2>서버 상태</h2>
-        <button class="refresh-btn" onclick="loadStatus()" title="새로고침">↻</button>
-      </div>
-      <div class="stat-grid" id="statGrid">
-        <div class="stat-card"><div class="stat-value" id="st-online">-</div><div class="stat-label">온라인 플레이어</div></div>
-        <div class="stat-card"><div class="stat-value" id="st-max">-</div><div class="stat-label">최대 플레이어</div></div>
-        <div class="stat-card"><div class="stat-value" id="st-tps">-</div><div class="stat-label">TPS</div></div>
-        <div class="stat-card"><div class="stat-value" id="st-anns">-</div><div class="stat-label">활성 공지</div></div>
-      </div>
-      <div class="card" style="padding:1rem 1.2rem">
-        <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px">서버 버전</div>
-        <div id="st-version" style="font-family:monospace;font-size:.88rem">-</div>
-        <div style="font-size:.82rem;color:var(--text-muted);margin:12px 0 8px">MOTD</div>
-        <div id="st-motd" style="font-size:.88rem">-</div>
-      </div>
-    </section>
+  <!-- Main -->
+  <div class="main">
 
-    <!-- PLAYERS -->
-    <section class="section" id="section-players">
-      <div class="section-header">
-        <h2>온라인 플레이어</h2>
-        <div style="display:flex;gap:8px">
-          <button class="refresh-btn" onclick="loadPlayers()" title="새로고침">↻</button>
-          <button class="btn btn-warn btn-sm" onclick="openKickModal()">+ 강퇴</button>
-          <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴</button>
+    <!-- ── STATUS ─────────────────────────────────── -->
+    <div id="ph-status" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">서버 상태</div>
+        <div class="page-sub">실시간 서버 정보</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadStatus()">↻ 새로고침</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-status" style="display:none">
+      <section class="section active" id="section-status">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">온라인</span><span class="stat-ico purple">👥</span></div>
+            <div class="stat-val" id="st-online">—</div>
+            <div class="stat-hint">현재 접속 중</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">최대 인원</span><span class="stat-ico green">🏷</span></div>
+            <div class="stat-val" id="st-max">—</div>
+            <div class="stat-hint">서버 슬롯</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">TPS</span><span class="stat-ico yellow">⚡</span></div>
+            <div class="stat-val" id="st-tps">—</div>
+            <div class="stat-hint">목표: 20.0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">활성 공지</span><span class="stat-ico red">📢</span></div>
+            <div class="stat-val" id="st-anns">—</div>
+            <div class="stat-hint">예약된 공지</div>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <table>
-          <thead>
-            <tr>
-              <th>플레이어</th><th>핑</th><th>월드</th><th>UUID</th><th>권한</th><th>작업</th>
-            </tr>
-          </thead>
-          <tbody id="playerTable"><tr><td colspan="6" class="empty-state">로딩 중...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- BANS -->
-    <section class="section" id="section-bans">
-      <div class="section-header">
-        <h2>밴 목록</h2>
-        <div style="display:flex;gap:8px">
-          <button class="refresh-btn" onclick="loadBans()" title="새로고침">↻</button>
-          <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴 추가</button>
+        <div class="card">
+          <div class="card-head"><span class="card-title">서버 정보</span></div>
+          <div class="card-body">
+            <div class="info-row">
+              <div class="info-item"><label>버전</label><p id="st-ver">—</p></div>
+              <div class="info-item"><label>MOTD</label><p id="st-motd">—</p></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <table>
-          <thead>
-            <tr><th>플레이어</th><th>사유</th><th>처리자</th><th>만료일</th><th>작업</th></tr>
-          </thead>
-          <tbody id="banTable"><tr><td colspan="5" class="empty-state">로딩 중...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
+      </section>
+    </div>
 
-    <!-- ANNOUNCEMENTS -->
-    <section class="section" id="section-announcements">
-      <div class="section-header">
-        <h2>공지 관리</h2>
+    <!-- ── PLAYERS ────────────────────────────────── -->
+    <div id="ph-players" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">플레이어</div>
+        <div class="page-sub">현재 온라인 플레이어</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadPlayers()">↻</button>
+        <button class="btn btn-warn btn-sm" onclick="openKickModal()">강퇴</button>
+        <button class="btn btn-danger btn-sm" onclick="openBanModal()">밴</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-players" style="display:none">
+      <section class="section active" id="section-players">
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>플레이어</th><th>핑</th><th>월드</th><th>UUID</th><th>권한</th><th>작업</th></tr></thead>
+              <tbody id="playerTbl"><tr><td colspan="6"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── BANS ──────────────────────────────────── -->
+    <div id="ph-bans" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">밴 목록</div>
+        <div class="page-sub">차단된 플레이어 관리</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadBans()">↻</button>
+        <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴 추가</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-bans" style="display:none">
+      <section class="section active" id="section-bans">
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>플레이어</th><th>사유</th><th>처리자</th><th>만료일</th><th>작업</th></tr></thead>
+              <tbody id="banTbl"><tr><td colspan="5"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── ANNOUNCEMENTS ─────────────────────────── -->
+    <div id="ph-announcements" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">공지 관리</div>
+        <div class="page-sub">자동 반복 공지 설정</div>
+      </div>
+      <div class="page-acts">
         <button class="btn btn-primary btn-sm" onclick="openAnnModal()">+ 공지 추가</button>
       </div>
-      <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">
-        색상 코드: <span class="color-preview">&amp;c빨강</span> <span class="color-preview">&amp;a초록</span> <span class="color-preview">&amp;e노랑</span> <span class="color-preview">&amp;b하늘</span> <span class="color-preview">&amp;l굵게</span> <span class="color-preview">&amp;r초기화</span>
+    </div>
+    <div class="scroll-area" id="sa-announcements" style="display:none">
+      <section class="section active" id="section-announcements">
+        <div style="font-size:11.5px;color:var(--text-2);margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span>색상 코드:</span>
+          <code style="color:#FF5555">&amp;c빨강</code>
+          <code style="color:#55FF55">&amp;a초록</code>
+          <code style="color:#FFFF55">&amp;e노랑</code>
+          <code style="color:#55FFFF">&amp;b하늘</code>
+          <code style="color:#AAAAAA">&amp;7회색</code>
+          <code><b>&amp;l굵게</b></code>
+        </div>
+        <div id="annList"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></div>
+      </section>
+    </div>
+
+    <!-- ── CONSOLE ────────────────────────────────── -->
+    <div id="ph-console" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">콘솔</div>
+        <div class="page-sub">서버 로그 및 명령어 실행</div>
       </div>
-      <div id="annList"><div class="empty-state"><div class="icon">📢</div>로딩 중...</div></div>
-    </section>
-  </main>
-</div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" id="autoScrollBtn" onclick="toggleAutoScroll()">↓ 자동스크롤 ON</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearConsole()">지우기</button>
+      </div>
+    </div>
+    <div class="scroll-area no-scroll" id="sa-console" style="display:none">
+      <section class="section active fill" id="section-console">
+        <div class="console-outer">
+          <div class="console-bar">
+            <div class="console-bar-left">🖥 서버 콘솔 <span class="sep">·</span> <span id="logCount" style="font-family:var(--mono)">0</span> 줄</div>
+          </div>
+          <div class="console-out" id="consoleOut"></div>
+          <div class="console-input-row">
+            <span class="console-prompt">&gt;</span>
+            <input class="console-in" id="consoleIn" placeholder="명령어 입력... (Enter로 실행)" autocomplete="off" spellcheck="false">
+            <button class="console-send" onclick="sendCmd()" title="실행">↵</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <div id="toast"></div>
 
 <!-- KICK MODAL -->
-<div class="modal-overlay" id="kickModal">
+<div class="overlay" id="kickModal">
   <div class="modal">
-    <h3>⚡ 플레이어 강퇴</h3>
-    <div class="form-group">
-      <label>플레이어 이름</label>
-      <input type="text" id="kickPlayer" placeholder="닉네임">
+    <div class="modal-head"><div class="modal-title">플레이어 강퇴</div></div>
+    <div class="modal-body">
+      <div class="form-g"><label class="form-label">플레이어 이름</label><input class="form-ctrl" type="text" id="kickName" placeholder="닉네임"></div>
+      <div class="form-g"><label class="form-label">사유 (선택)</label><input class="form-ctrl" type="text" id="kickReason" placeholder="강퇴 사유"></div>
     </div>
-    <div class="form-group">
-      <label>사유</label>
-      <input type="text" id="kickReason" placeholder="강퇴 사유 (선택)">
-    </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('kickModal')">취소</button>
       <button class="btn btn-warn" onclick="doKick()">강퇴</button>
     </div>
@@ -337,84 +548,77 @@
 </div>
 
 <!-- BAN MODAL -->
-<div class="modal-overlay" id="banModal">
+<div class="overlay" id="banModal">
   <div class="modal">
-    <h3>🚫 플레이어 밴</h3>
-    <div class="form-group">
-      <label>플레이어 이름</label>
-      <input type="text" id="banPlayer" placeholder="닉네임">
+    <div class="modal-head"><div class="modal-title">플레이어 밴</div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-g"><label class="form-label">플레이어 이름</label><input class="form-ctrl" type="text" id="banName" placeholder="닉네임"></div>
+        <div class="form-g"><label class="form-label">사유 (선택)</label><input class="form-ctrl" type="text" id="banReason" placeholder="밴 사유"></div>
+      </div>
+      <div class="form-g"><label class="form-label">만료일시 (비워두면 영구)</label><input class="form-ctrl" type="datetime-local" id="banExpiry"></div>
     </div>
-    <div class="form-group">
-      <label>사유</label>
-      <input type="text" id="banReason" placeholder="밴 사유 (선택)">
-    </div>
-    <div class="form-group">
-      <label>만료일시 (비워두면 영구)</label>
-      <input type="datetime-local" id="banExpiry">
-    </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('banModal')">취소</button>
       <button class="btn btn-danger" onclick="doBan()">밴</button>
     </div>
   </div>
 </div>
 
-<!-- ANNOUNCEMENT MODAL -->
-<div class="modal-overlay" id="annModal">
+<!-- ANN MODAL -->
+<div class="overlay" id="annModal">
   <div class="modal">
-    <h3 id="annModalTitle">📢 공지 추가</h3>
-    <input type="hidden" id="annEditId">
-    <div class="form-group">
-      <label>공지 메시지 (&amp;코드 사용 가능)</label>
-      <textarea id="annMessage" placeholder="&a[공지] &f안녕하세요!"></textarea>
+    <div class="modal-head"><div class="modal-title" id="annModalTitle">공지 추가</div></div>
+    <div class="modal-body">
+      <input type="hidden" id="annId">
+      <div class="form-g"><label class="form-label">공지 메시지 (&amp; 색상 코드 사용 가능)</label><textarea class="form-ctrl" id="annMsg" placeholder="&a[공지] &f안녕하세요!"></textarea></div>
+      <div class="form-grid">
+        <div class="form-g"><label class="form-label">주기 (초)</label><input class="form-ctrl" type="number" id="annInterval" value="300" min="10"></div>
+        <div class="form-g"><label class="form-label">권한 필터 (선택)</label><input class="form-ctrl" type="text" id="annPerm" placeholder="예: vip.notify"></div>
+      </div>
+      <div class="form-g">
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" id="annEnabled" checked><div class="tgl-track"></div><div class="tgl-thumb"></div></label>
+          <span class="form-label" style="margin:0">활성화</span>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>주기 (초)</label>
-      <input type="number" id="annInterval" value="300" min="10">
-    </div>
-    <div class="form-group">
-      <label>권한 필터 (비워두면 전체)</label>
-      <input type="text" id="annPermission" placeholder="예: vip.notify">
-    </div>
-    <div class="form-group" style="display:flex;align-items:center;gap:10px">
-      <label style="margin:0">활성화</label>
-      <label class="toggle">
-        <input type="checkbox" id="annEnabled" checked>
-        <div class="toggle-track"></div>
-        <div class="toggle-thumb"></div>
-      </label>
-    </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('annModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveAnnouncement()">저장</button>
+      <button class="btn btn-primary" onclick="saveAnn()">저장</button>
     </div>
   </div>
 </div>
 
 <script>
-const API = '';
-let token = localStorage.getItem('dashboard_token') || '';
-let currentNav = 'status';
-let autoRefreshTimer = null;
+'use strict';
 
-// --- TOKEN ---
+/* ── STATE ───────────────────────────────────────── */
+let token = localStorage.getItem('sd_token') || '';
+let curNav = 'status';
+let refreshTimer = null;
+
+// console
+let logOffset = 0;
+let logPollTimer = null;
+let autoScroll = true;
+const cmdHistory = [];
+let histIdx = -1;
+
+/* ── TOKEN ───────────────────────────────────────── */
 function checkToken() {
-  if (!token) { document.getElementById('tokenOverlay').style.display = 'flex'; }
-  else { document.getElementById('tokenOverlay').style.display = 'none'; init(); }
+  if (!token) show('tokScreen');
+  else { hide('tokScreen'); init(); }
 }
-
 function setToken() {
-  const v = document.getElementById('tokenInput').value.trim();
+  const v = document.getElementById('tokInput').value.trim();
   if (!v) return;
-  token = v;
-  localStorage.setItem('dashboard_token', token);
-  document.getElementById('tokenOverlay').style.display = 'none';
-  init();
+  token = v; localStorage.setItem('sd_token', token);
+  hide('tokScreen'); init();
 }
+document.getElementById('tokInput').addEventListener('keydown', e => { if (e.key === 'Enter') setToken(); });
 
-document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') setToken(); });
-
-// --- API ---
+/* ── API ─────────────────────────────────────────── */
 async function api(method, path, body) {
   try {
     const res = await fetch('/api' + path, {
@@ -424,10 +628,8 @@ async function api(method, path, body) {
     });
     const data = await res.json();
     if (res.status === 401) {
-      token = '';
-      localStorage.removeItem('dashboard_token');
-      document.getElementById('tokenOverlay').style.display = 'flex';
-      throw new Error('인증 실패');
+      token = ''; localStorage.removeItem('sd_token');
+      show('tokScreen'); throw new Error('인증 실패');
     }
     return { ok: res.ok, status: res.status, data };
   } catch (e) {
@@ -435,196 +637,234 @@ async function api(method, path, body) {
   }
 }
 
-// --- INIT ---
+/* ── INIT ────────────────────────────────────────── */
 function init() {
-  loadStatus();
-  loadPlayers();
-  loadBans();
-  loadAnnouncements();
-  setConnectionStatus(true);
-  clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(() => {
-    if (currentNav === 'status') loadStatus();
-    if (currentNav === 'players') loadPlayers();
+  loadStatus(); loadPlayers(); loadBans(); loadAnnouncements();
+  setConn(true);
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    if (curNav === 'status')   loadStatus();
+    if (curNav === 'players')  loadPlayers();
   }, 15000);
 }
 
-// --- NAVIGATION ---
-function navigate(section) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.querySelector(`[data-nav="${section}"]`).classList.add('active');
-  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-  document.getElementById('section-' + section).classList.add('active');
-  currentNav = section;
-  if (section === 'players') loadPlayers();
-  if (section === 'bans') loadBans();
+/* ── NAVIGATION ──────────────────────────────────── */
+const SECTIONS = ['status','players','bans','announcements','console'];
+function nav(section) {
+  SECTIONS.forEach(s => {
+    const ph = document.getElementById('ph-' + s);
+    const sa = document.getElementById('sa-' + s);
+    const ni = document.querySelector(`[data-nav="${s}"]`);
+    if (ph) ph.style.display = 'none';
+    if (sa) sa.style.display = 'none';
+    if (ni) ni.classList.remove('active');
+  });
+  const ph = document.getElementById('ph-' + section);
+  const sa = document.getElementById('sa-' + section);
+  const ni = document.querySelector(`[data-nav="${section}"]`);
+  if (ph) ph.style.display = 'flex';
+  if (sa) sa.style.display = section === 'console' ? 'flex' : 'block';
+  if (ni) ni.classList.add('active');
+  curNav = section;
+
+  if (section === 'players')       loadPlayers();
+  if (section === 'bans')          loadBans();
   if (section === 'announcements') loadAnnouncements();
-  if (section === 'status') loadStatus();
+  if (section === 'status')        loadStatus();
+  if (section === 'console')       startLogPoll();
+  else stopLogPoll();
 }
 
-// --- STATUS ---
+/* Initialize first visible section */
+(function initNav() {
+  SECTIONS.forEach(s => {
+    const ph = document.getElementById('ph-' + s);
+    const sa = document.getElementById('sa-' + s);
+    if (ph) ph.style.display = 'none';
+    if (sa) sa.style.display = 'none';
+  });
+  document.getElementById('ph-status').style.display = 'flex';
+  document.getElementById('sa-status').style.display = 'block';
+})();
+
+/* ── STATUS ──────────────────────────────────────── */
 async function loadStatus() {
   const r = await api('GET', '/status');
-  if (!r.ok) { setConnectionStatus(false); return; }
-  setConnectionStatus(true);
+  if (!r.ok) { setConn(false); return; }
+  setConn(true);
   const d = r.data;
-  document.getElementById('st-online').textContent = d.online;
-  document.getElementById('st-max').textContent = d.max;
-  document.getElementById('st-tps').textContent = d.tps;
-  document.getElementById('st-version').textContent = d.version;
-  document.getElementById('st-motd').textContent = d.motd;
-  document.getElementById('sidebarVersion').textContent = d.version.split(' ')[0] || '';
-
-  // TPS 색상
+  $('st-online').textContent = d.online;
+  $('st-max').textContent    = d.max;
+  $('st-ver').textContent    = d.version;
+  $('st-motd').textContent   = d.motd;
+  $('sideVer').textContent   = (d.version || '').split(' ')[0] || '—';
   const tps = parseFloat(d.tps);
-  const tpsEl = document.getElementById('st-tps');
+  const tpsEl = $('st-tps');
+  tpsEl.textContent = d.tps;
   tpsEl.style.color = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
-
   const r2 = await api('GET', '/announcements');
-  if (r2.ok) {
-    document.getElementById('st-anns').textContent = r2.data.filter(a => a.enabled).length;
-  }
+  if (r2.ok) $('st-anns').textContent = r2.data.filter(a => a.enabled).length;
 }
 
-// --- PLAYERS ---
+/* ── PLAYERS ─────────────────────────────────────── */
 async function loadPlayers() {
   const r = await api('GET', '/players');
-  const tbody = document.getElementById('playerTable');
-  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:var(--red)">로드 실패</td></tr>`; return; }
-  if (!r.data.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🎮</div>온라인 플레이어 없음</div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = r.data.map(p => {
-    const pingCls = p.ping < 80 ? 'ping-good' : p.ping < 200 ? 'ping-ok' : 'ping-bad';
-    const opBadge = p.op ? '<span class="badge badge-yellow">OP</span> ' : '';
+  const tb = $('playerTbl');
+  if (!r.ok) { tb.innerHTML = emptyRow(6, '로드 실패', true); return; }
+  if (!r.data.length) { tb.innerHTML = emptyRow(6, '온라인 플레이어 없음'); return; }
+  tb.innerHTML = r.data.map(p => {
+    const ping = p.ping;
+    const cls = ping < 80 ? 'pg' : ping < 200 ? 'py' : 'pr';
+    const opBadge = p.op ? '<span class="badge badge-yellow" style="margin-right:4px">OP</span>' : '';
     return `<tr>
       <td><strong>${esc(p.name)}</strong></td>
-      <td><span class="ping-bar ${pingCls}"></span>${p.ping}ms</td>
+      <td>
+        <div class="ping">
+          <div class="pb ${cls}"><span></span><span></span><span></span></div>
+          <span style="font-family:var(--mono);font-size:12px">${ping}ms</span>
+        </div>
+      </td>
       <td>${esc(p.world)}</td>
-      <td><span style="font-family:monospace;font-size:.75rem;color:var(--text-muted)">${p.uuid.substring(0,8)}…</span></td>
+      <td><span class="mono" style="font-size:11.5px;color:var(--text-2)">${p.uuid.substring(0,8)}…</span></td>
       <td>${opBadge}</td>
       <td>
-        <div class="btn-group">
-          <button class="btn btn-warn btn-sm" onclick="kickPlayer('${esc(p.name)}')">강퇴</button>
-          <button class="btn btn-danger btn-sm" onclick="banPlayer('${esc(p.name)}')">밴</button>
+        <div class="btn-grp">
+          <button class="btn btn-warn btn-xs" onclick="kickPre('${esc(p.name)}')">강퇴</button>
+          <button class="btn btn-danger btn-xs" onclick="banPre('${esc(p.name)}')">밴</button>
         </div>
       </td>
     </tr>`;
   }).join('');
 }
 
-// --- BANS ---
+/* ── BANS ────────────────────────────────────────── */
 async function loadBans() {
   const r = await api('GET', '/banned');
-  const tbody = document.getElementById('banTable');
-  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color:var(--red)">로드 실패</td></tr>`; return; }
-  if (!r.data.length) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">✅</div>밴된 플레이어 없음</div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = r.data.map(b => `<tr>
+  const tb = $('banTbl');
+  if (!r.ok) { tb.innerHTML = emptyRow(5, '로드 실패', true); return; }
+  if (!r.data.length) { tb.innerHTML = emptyRow(5, '밴된 플레이어 없음'); return; }
+  tb.innerHTML = r.data.map(b => `<tr>
     <td><strong>${esc(b.player)}</strong></td>
-    <td>${esc(b.reason || '-')}</td>
-    <td>${esc(b.source || '-')}</td>
+    <td>${esc(b.reason || '—')}</td>
+    <td>${esc(b.source || '—')}</td>
     <td>${b.expires === '영구' ? '<span class="badge badge-red">영구</span>' : esc(b.expires)}</td>
-    <td><button class="btn btn-ghost btn-sm" onclick="unbanPlayer('${esc(b.player)}')">밴 해제</button></td>
+    <td><button class="btn btn-ghost btn-xs" onclick="doUnban('${esc(b.player)}')">해제</button></td>
   </tr>`).join('');
 }
 
-// --- ANNOUNCEMENTS ---
+/* ── ANNOUNCEMENTS ───────────────────────────────── */
 async function loadAnnouncements() {
   const r = await api('GET', '/announcements');
-  const container = document.getElementById('annList');
-  if (!r.ok) { container.innerHTML = `<div class="empty-state" style="color:var(--red)">로드 실패</div>`; return; }
+  const el = $('annList');
+  if (!r.ok) { el.innerHTML = `<div class="empty"><p style="color:var(--red)">로드 실패</p></div>`; return; }
   if (!r.data.length) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">📢</div><div>공지가 없습니다.<br><small>공지 추가 버튼을 눌러 생성하세요.</small></div></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-ico">📢</div><p>공지가 없습니다. 위 버튼으로 추가하세요.</p></div>`;
     return;
   }
-  container.innerHTML = r.data.map(a => {
-    const intLabel = formatInterval(a.interval);
+  el.innerHTML = r.data.map(a => {
     const perm = a.permission ? `<span>권한: <code>${esc(a.permission)}</code></span>` : '<span>전체 대상</span>';
-    const statusBadge = a.enabled ? '<span class="badge badge-green">활성</span>' : '<span class="badge badge-red">비활성</span>';
-    return `<div class="ann-card" id="ann-${a.id}">
+    const sb = a.enabled ? '<span class="badge badge-green">활성</span>' : '<span class="badge badge-red">비활성</span>';
+    return `<div class="ann-card">
       <div class="ann-body">
-        <div class="ann-msg">${renderMcColor(a.message)}</div>
-        <div class="ann-meta">
-          ${statusBadge}
-          <span>⏱ ${intLabel}마다</span>
-          ${perm}
-          <span class="mc-color">${esc(a.message)}</span>
-        </div>
+        <div class="ann-msg">${renderMc(a.message)}</div>
+        <div class="ann-meta">${sb}<span class="ann-sep">·</span><span>⏱ ${fmtInterval(a.interval)}마다</span><span class="ann-sep">·</span>${perm}</div>
       </div>
-      <div class="ann-actions">
-        <button class="btn btn-ghost btn-sm" onclick="toggleAnn('${a.id}')">${a.enabled ? '⏸ 일시정지' : '▶ 시작'}</button>
-        <button class="btn btn-ghost btn-sm" onclick="editAnn(${JSON.stringify(a).replace(/"/g, '&quot;')})">✏ 편집</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteAnn('${a.id}')">🗑</button>
+      <div class="ann-acts">
+        <button class="btn btn-ghost btn-xs" onclick="toggleAnn('${a.id}')">${a.enabled ? '⏸' : '▶'}</button>
+        <button class="btn btn-ghost btn-xs" onclick='editAnn(${JSON.stringify(a).replace(/"/g,"&quot;")})'>✏</button>
+        <button class="btn btn-danger btn-xs" onclick="delAnn('${a.id}')">🗑</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function formatInterval(s) {
-  if (s < 60) return `${s}초`;
-  if (s < 3600) return `${Math.round(s/60)}분`;
-  return `${Math.round(s/3600)}시간`;
+/* ── CONSOLE ─────────────────────────────────────── */
+function startLogPoll() {
+  stopLogPoll();
+  pollLogs();
+  logPollTimer = setInterval(pollLogs, 1000);
+}
+function stopLogPoll() {
+  clearInterval(logPollTimer);
+  logPollTimer = null;
 }
 
-// 마인크래프트 색상 코드 렌더링
-function linkify(text) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const segments = text.split(urlRegex);
-  return segments.map((seg, i) => {
-    if (i % 2 === 1) {
-      const escaped = esc(seg);
-      return `<a href="${escaped}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;word-break:break-all">${escaped}</a>`;
-    }
-    return esc(seg);
-  }).join('');
+async function pollLogs() {
+  const r = await api('GET', `/logs?since=${logOffset}`);
+  if (!r.ok) return;
+  const { total, lines } = r.data;
+  logOffset = total;
+  appendLogs(lines);
+  $('logCount').textContent = total;
 }
 
-function renderMcColor(text) {
-  const map = {
-    '0':'#000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000',
-    '5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF',
-    'a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF',
-  };
-  let result = '<span>';
-  const parts = text.split(/&([0-9a-fklmnor])/i);
-  let bold = false, italic = false;
-  parts.forEach((part, i) => {
-    if (i % 2 === 0) { result += linkify(part); }
-    else {
-      const code = part.toLowerCase();
-      if (code === 'l') { bold = true; result += '<b>'; }
-      else if (code === 'o') { italic = true; result += '<i>'; }
-      else if (code === 'r') {
-        if (bold) result += '</b>';
-        if (italic) result += '</i>';
-        bold = italic = false;
-        result += '</span><span>';
-      } else if (map[code]) {
-        result += `</span><span style="color:${map[code]}">`;
-      }
-    }
-  });
-  result += '</span>';
-  return result;
+function appendLogs(lines) {
+  if (!lines || !lines.length) return;
+  const out = $('consoleOut');
+  const atBottom = out.scrollHeight - out.scrollTop - out.clientHeight < 40;
+  const frag = document.createDocumentFragment();
+  for (const raw of lines) {
+    const parts = raw.split('\t');
+    const time = parts[0] || '';
+    const level = parts[1] || 'INFO';
+    const msg = parts.slice(2).join('\t');
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    const lv = level === 'WARNING' ? 'WARN' : level;
+    div.innerHTML =
+      `<span class="log-t">${esc(time)}</span>` +
+      `<span class="log-lv ${level}">${lv.substring(0,4)}</span>` +
+      `<span class="log-m ${level}">${esc(msg)}</span>`;
+    frag.appendChild(div);
+  }
+  out.appendChild(frag);
+  while (out.children.length > 600) out.removeChild(out.firstChild);
+  if (autoScroll && atBottom) out.scrollTop = out.scrollHeight;
 }
 
-// --- ACTIONS ---
-function kickPlayer(name) {
-  document.getElementById('kickPlayer').value = name;
-  openModal('kickModal');
+function clearConsole() {
+  $('consoleOut').innerHTML = '';
+  logOffset = 0;
 }
-function banPlayer(name) {
-  document.getElementById('banPlayer').value = name;
-  openModal('banModal');
+
+function toggleAutoScroll() {
+  autoScroll = !autoScroll;
+  $('autoScrollBtn').textContent = `↓ 자동스크롤 ${autoScroll ? 'ON' : 'OFF'}`;
 }
+
+async function sendCmd() {
+  const inp = $('consoleIn');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  cmdHistory.push(cmd); histIdx = -1;
+  inp.value = '';
+  const r = await api('POST', '/console', { command: cmd });
+  if (!r.ok) toast('실행 실패: ' + (r.data?.error || r.error || ''), 'error');
+}
+
+document.getElementById('consoleIn').addEventListener('keydown', e => {
+  const inp = $('consoleIn');
+  if (e.key === 'Enter') { sendCmd(); return; }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (histIdx < cmdHistory.length - 1) { histIdx++; inp.value = cmdHistory[cmdHistory.length - 1 - histIdx]; }
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (histIdx > 0) { histIdx--; inp.value = cmdHistory[cmdHistory.length - 1 - histIdx]; }
+    else { histIdx = -1; inp.value = ''; }
+  }
+});
+
+/* ── ACTIONS ─────────────────────────────────────── */
+function kickPre(name) { $('kickName').value = name; $('kickReason').value = ''; openModal('kickModal'); }
+function banPre(name)  { $('banName').value  = name; $('banReason').value  = ''; $('banExpiry').value = ''; openModal('banModal'); }
+function openKickModal() { $('kickName').value=''; $('kickReason').value=''; openModal('kickModal'); }
+function openBanModal()  { $('banName').value=''; $('banReason').value=''; $('banExpiry').value=''; openModal('banModal'); }
 
 async function doKick() {
-  const player = document.getElementById('kickPlayer').value.trim();
-  const reason = document.getElementById('kickReason').value.trim();
+  const player = $('kickName').value.trim();
+  const reason = $('kickReason').value.trim();
   if (!player) return;
   const r = await api('POST', '/kick', { player, reason });
   if (r.ok) { toast(r.data.message, 'success'); closeModal('kickModal'); loadPlayers(); }
@@ -632,54 +872,47 @@ async function doKick() {
 }
 
 async function doBan() {
-  const player = document.getElementById('banPlayer').value.trim();
-  const reason = document.getElementById('banReason').value.trim();
-  const expiry = document.getElementById('banExpiry').value || null;
+  const player = $('banName').value.trim();
+  const reason = $('banReason').value.trim();
+  const expiry = $('banExpiry').value || null;
   if (!player) return;
   const r = await api('POST', '/ban', { player, reason, expiry });
   if (r.ok) { toast(r.data.message, 'success'); closeModal('banModal'); loadBans(); loadPlayers(); }
   else toast(r.data?.error || '밴 실패', 'error');
 }
 
-async function unbanPlayer(name) {
+async function doUnban(name) {
   if (!confirm(`${name} 의 밴을 해제하시겠습니까?`)) return;
   const r = await api('POST', '/unban', { player: name });
   if (r.ok) { toast(r.data.message, 'success'); loadBans(); }
-  else toast(r.data?.error || '밴 해제 실패', 'error');
+  else toast(r.data?.error || '해제 실패', 'error');
 }
 
 function openAnnModal() {
-  document.getElementById('annModalTitle').textContent = '📢 공지 추가';
-  document.getElementById('annEditId').value = '';
-  document.getElementById('annMessage').value = '';
-  document.getElementById('annInterval').value = '300';
-  document.getElementById('annPermission').value = '';
-  document.getElementById('annEnabled').checked = true;
+  $('annModalTitle').textContent = '공지 추가';
+  $('annId').value = ''; $('annMsg').value = ''; $('annInterval').value = '300';
+  $('annPerm').value = ''; $('annEnabled').checked = true;
   openModal('annModal');
 }
 
 function editAnn(a) {
-  document.getElementById('annModalTitle').textContent = '✏ 공지 편집';
-  document.getElementById('annEditId').value = a.id;
-  document.getElementById('annMessage').value = a.message;
-  document.getElementById('annInterval').value = a.interval;
-  document.getElementById('annPermission').value = a.permission || '';
-  document.getElementById('annEnabled').checked = a.enabled;
+  $('annModalTitle').textContent = '공지 편집';
+  $('annId').value = a.id; $('annMsg').value = a.message; $('annInterval').value = a.interval;
+  $('annPerm').value = a.permission || ''; $('annEnabled').checked = a.enabled;
   openModal('annModal');
 }
 
-async function saveAnnouncement() {
-  const id = document.getElementById('annEditId').value;
-  const message = document.getElementById('annMessage').value.trim();
-  const interval = parseInt(document.getElementById('annInterval').value) || 300;
-  const permission = document.getElementById('annPermission').value.trim() || null;
-  const enabled = document.getElementById('annEnabled').checked;
+async function saveAnn() {
+  const id       = $('annId').value;
+  const message  = $('annMsg').value.trim();
+  const interval = parseInt($('annInterval').value) || 300;
+  const permission = $('annPerm').value.trim() || null;
+  const enabled  = $('annEnabled').checked;
   if (!message) { toast('메시지를 입력하세요.', 'error'); return; }
-  const body = { message, interval, permission, enabled };
   const r = id
-    ? await api('PUT', `/announcements/${id}`, body)
-    : await api('POST', '/announcements', body);
-  if (r.ok) { toast(id ? '공지 수정 완료' : '공지 추가 완료', 'success'); closeModal('annModal'); loadAnnouncements(); }
+    ? await api('PUT',  `/announcements/${id}`, { message, interval, permission, enabled })
+    : await api('POST', '/announcements',        { message, interval, permission, enabled });
+  if (r.ok) { toast(id ? '수정 완료' : '추가 완료', 'success'); closeModal('annModal'); loadAnnouncements(); }
   else toast(r.data?.error || '저장 실패', 'error');
 }
 
@@ -689,48 +922,84 @@ async function toggleAnn(id) {
   else toast(r.data?.error || '오류', 'error');
 }
 
-async function deleteAnn(id) {
+async function delAnn(id) {
   if (!confirm('이 공지를 삭제하시겠습니까?')) return;
   const r = await api('DELETE', `/announcements/${id}`);
-  if (r.ok) { toast('공지 삭제 완료', 'success'); loadAnnouncements(); }
+  if (r.ok) { toast('삭제 완료', 'success'); loadAnnouncements(); }
   else toast(r.data?.error || '삭제 실패', 'error');
 }
 
-// --- MODAL ---
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+/* ── MODAL ───────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function openKickModal() { document.getElementById('kickPlayer').value = ''; document.getElementById('kickReason').value = ''; openModal('kickModal'); }
-function openBanModal() { document.getElementById('banPlayer').value = ''; document.getElementById('banReason').value = ''; document.getElementById('banExpiry').value = ''; openModal('banModal'); }
-
-document.querySelectorAll('.modal-overlay').forEach(el => {
+document.querySelectorAll('.overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
 
-// --- TOAST ---
+/* ── TOAST ───────────────────────────────────────── */
 function toast(msg, type = 'success') {
-  const container = document.getElementById('toast');
+  const c = document.getElementById('toast');
   const el = document.createElement('div');
   el.className = `toast-item ${type}`;
   el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
 }
 
-// --- STATUS ---
-function setConnectionStatus(connected) {
-  const dot = document.getElementById('connDot');
-  const txt = document.getElementById('connStatus');
-  dot.style.background = connected ? 'var(--green)' : 'var(--red)';
-  txt.textContent = connected ? '연결됨' : '연결 끊김';
+/* ── UTILS ───────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const show = id => document.getElementById(id).classList.add('show');
+const hide = id => document.getElementById(id).classList.remove('show');
+
+function setConn(ok) {
+  const dot = $('connDot');
+  dot.className = 'conn-dot ' + (ok ? 'on' : 'off');
+  $('connTxt').textContent = ok ? '연결됨' : '연결 끊김';
 }
 
-// --- UTILS ---
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// --- START ---
+function emptyRow(cols, msg, isErr) {
+  const c = isErr ? 'color:var(--red)' : '';
+  return `<tr><td colspan="${cols}"><div class="empty" style="${c}"><p>${esc(msg)}</p></div></td></tr>`;
+}
+
+function fmtInterval(s) {
+  if (s < 60) return `${s}초`;
+  if (s < 3600) return `${Math.round(s/60)}분`;
+  return `${Math.round(s/3600)}시간`;
+}
+
+function linkify(text) {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((seg, i) => {
+    if (i % 2 === 1) {
+      const e = esc(seg);
+      return `<a href="${e}" target="_blank" rel="noopener" style="color:var(--accent-2);text-decoration:underline">${e}</a>`;
+    }
+    return esc(seg);
+  }).join('');
+}
+
+function renderMc(text) {
+  const clr = {'0':'#000','1':'#00A','2':'#0A0','3':'#0AA','4':'#A00','5':'#A0A',
+    '6':'#FA0','7':'#AAA','8':'#555','9':'#55F','a':'#5F5','b':'#5FF','c':'#F55','d':'#F5F','e':'#FF5','f':'#FFF'};
+  let out = '<span>', bold=false, italic=false;
+  text.split(/&([0-9a-fklmnorA-FKLMNOR])/g).forEach((p, i) => {
+    if (i % 2 === 0) { out += linkify(p); return; }
+    const c = p.toLowerCase();
+    if (c==='l') { bold=true; out+='<b>'; }
+    else if (c==='o') { italic=true; out+='<i>'; }
+    else if (c==='r') { if(bold)out+='</b>'; if(italic)out+='</i>'; bold=italic=false; out+='</span><span>'; }
+    else if (clr[c]) { out+=`</span><span style="color:${clr[c]}">`; }
+  });
+  out += '</span>';
+  return out;
+}
+
+/* ── BOOT ────────────────────────────────────────── */
 checkToken();
 </script>
 </body>

@@ -89,6 +89,12 @@ public class ApiHandler implements HttpHandler {
         // --- 서버 상태 ---
         else if (path.equals("/status") && method.equals("GET")) {
             handleGetStatus(ex);
+        }
+        // --- 콘솔 ---
+        else if (path.equals("/logs") && method.equals("GET")) {
+            handleGetLogs(ex);
+        } else if (path.equals("/console") && method.equals("POST")) {
+            handleConsole(ex);
         } else {
             send(ex, 404, obj("error", "Not Found"));
         }
@@ -250,6 +256,39 @@ public class ApiHandler implements HttpHandler {
             return o;
         });
         send(ex, 200, status);
+    }
+
+    private void handleGetLogs(HttpExchange ex) throws IOException {
+        int since = 0;
+        String query = ex.getRequestURI().getQuery();
+        if (query != null) {
+            for (String p : query.split("&")) {
+                if (p.startsWith("since=")) {
+                    try { since = Integer.parseInt(p.substring(6)); } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+        var lm = plugin.getLogManager();
+        List<String> lines = lm.getLines(since);
+        int total = lm.size();
+        JsonObject resp = new JsonObject();
+        resp.addProperty("total", total);
+        JsonArray arr = new JsonArray();
+        for (String l : lines) arr.add(l);
+        resp.add("lines", arr);
+        send(ex, 200, resp);
+    }
+
+    private void handleConsole(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        String command = getStr(body, "command");
+        if (command == null || command.isBlank()) {
+            send(ex, 400, obj("error", "command 필드가 필요합니다."));
+            return;
+        }
+        final String cmd = command.trim();
+        runOnMain(() -> { Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd); return null; });
+        send(ex, 200, obj("message", "실행 완료"));
     }
 
     // --- 유틸리티 ---

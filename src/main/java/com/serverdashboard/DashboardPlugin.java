@@ -2,6 +2,7 @@ package com.serverdashboard;
 
 import com.serverdashboard.managers.AcmeManager;
 import com.serverdashboard.managers.AnnouncementManager;
+import com.serverdashboard.managers.LogManager;
 import com.serverdashboard.web.WebServer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -16,12 +17,14 @@ public class DashboardPlugin extends JavaPlugin {
     private WebServer webServer;
     private AnnouncementManager announcementManager;
     private AcmeManager acmeManager;
+    private LogManager logManager;
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
 
+        logManager = new LogManager();
         announcementManager = new AnnouncementManager(this);
         announcementManager.load();
 
@@ -57,6 +60,7 @@ public class DashboardPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (logManager != null) logManager.stop();
         if (webServer != null) webServer.stop();
         if (announcementManager != null) {
             announcementManager.stopAll();
@@ -158,4 +162,5 @@ public class DashboardPlugin extends JavaPlugin {
     public static DashboardPlugin getInstance() { return instance; }
     public AnnouncementManager getAnnouncementManager() { return announcementManager; }
     public AcmeManager getAcmeManager() { return acmeManager; }
+    public LogManager getLogManager() { return logManager; }
 }
