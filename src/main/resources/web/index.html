@@ -571,6 +571,18 @@ function formatInterval(s) {
 }
 
 // 마인크래프트 색상 코드 렌더링
+function linkify(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const segments = text.split(urlRegex);
+  return segments.map((seg, i) => {
+    if (i % 2 === 1) {
+      const escaped = esc(seg);
+      return `<a href="${escaped}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;word-break:break-all">${escaped}</a>`;
+    }
+    return esc(seg);
+  }).join('');
+}
+
 function renderMcColor(text) {
   const map = {
     '0':'#000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000',
@@ -581,7 +593,7 @@ function renderMcColor(text) {
   const parts = text.split(/&([0-9a-fklmnor])/i);
   let bold = false, italic = false;
   parts.forEach((part, i) => {
-    if (i % 2 === 0) { result += esc(part); }
+    if (i % 2 === 0) { result += linkify(part); }
     else {
       const code = part.toLowerCase();
       if (code === 'l') { bold = true; result += '<b>'; }
