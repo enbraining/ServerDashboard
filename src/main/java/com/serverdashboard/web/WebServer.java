@@ -34,17 +34,23 @@ public class WebServer {
     }
 
     private void serveStatic(HttpExchange ex) throws IOException {
+        // 요청 바디를 모두 소비해야 keep-alive 커넥션이 걸리지 않음
+        ex.getRequestBody().readAllBytes();
+
         String path = ex.getRequestURI().getPath();
         if (path.equals("/") || path.isEmpty()) path = "/index.html";
+
+        ex.getResponseHeaders().add("Connection", "close");
 
         String resourcePath = "/web" + path;
         InputStream is = getClass().getResourceAsStream(resourcePath);
 
         if (is == null) {
             byte[] msg = "404 Not Found".getBytes(StandardCharsets.UTF_8);
+            ex.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
             ex.sendResponseHeaders(404, msg.length);
-            ex.getResponseBody().write(msg);
-            ex.getResponseBody().close();
+            try (OutputStream os = ex.getResponseBody()) { os.write(msg); }
+            ex.close();
             return;
         }
 
@@ -55,6 +61,7 @@ public class WebServer {
         ex.getResponseHeaders().add("Content-Type", contentType);
         ex.sendResponseHeaders(200, bytes.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(bytes); }
+        ex.close();
     }
 
     private String getContentType(String path) {

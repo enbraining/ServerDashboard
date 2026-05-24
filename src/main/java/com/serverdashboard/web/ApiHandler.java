@@ -304,6 +304,7 @@ public class ApiHandler implements HttpHandler {
         ex.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         ex.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
         ex.getResponseHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        ex.getResponseHeaders().add("Connection", "close");
     }
 
     private void send(HttpExchange ex, int status, JsonElement body) throws IOException {
@@ -311,5 +312,6 @@ public class ApiHandler implements HttpHandler {
         ex.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
         ex.sendResponseHeaders(status, bytes.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(bytes); }
+        ex.close();
     }
 }
