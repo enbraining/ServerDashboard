@@ -863,6 +863,12 @@ async function sendCmd() {
   const cmd = inp.value.trim();
   if (!cmd) return;
   cmdHistory.push(cmd); histIdx = -1; inp.value = '';
+  const out = $('consoleOut');
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-t" style="color:var(--accent-2);user-select:none">CMD</span><span class="log-lv" style="color:var(--accent-2)"> &gt; </span><span class="log-m" style="color:var(--accent-2)">${esc(cmd)}</span>`;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
   const r = await api('POST', '/console', { command: cmd });
   if (!r.ok) toast('실행 실패: ' + (r.data?.error || r.error || ''), 'error');
 }
