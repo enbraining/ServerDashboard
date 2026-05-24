@@ -53,13 +53,12 @@ public class ApiHandler implements HttpHandler {
         try {
             route(ex, method, path);
         } catch (Exception e) {
-            plugin.getLogger().warning("API 오류: " + e.getMessage());
+            plugin.getLogger().warning("API error: " + e.getMessage());
             send(ex, 500, obj("error", e.getMessage()));
         }
     }
 
     private void route(HttpExchange ex, String method, String path) throws Exception {
-        // --- 플레이어 ---
         if (path.equals("/players") && method.equals("GET")) {
             handleGetPlayers(ex);
         } else if (path.equals("/kick") && method.equals("POST")) {
@@ -70,9 +69,7 @@ public class ApiHandler implements HttpHandler {
             handleUnban(ex);
         } else if (path.equals("/banned") && method.equals("GET")) {
             handleGetBanned(ex);
-        }
-        // --- 공지 ---
-        else if (path.equals("/announcements") && method.equals("GET")) {
+        } else if (path.equals("/announcements") && method.equals("GET")) {
             handleGetAnnouncements(ex);
         } else if (path.equals("/announcements") && method.equals("POST")) {
             handleCreateAnnouncement(ex);
@@ -85,17 +82,11 @@ public class ApiHandler implements HttpHandler {
         } else if (path.matches("/announcements/[^/]+") && method.equals("DELETE")) {
             String id = path.substring("/announcements/".length());
             handleDeleteAnnouncement(ex, id);
-        }
-        // --- 서버 상태 ---
-        else if (path.equals("/status") && method.equals("GET")) {
+        } else if (path.equals("/status") && method.equals("GET")) {
             handleGetStatus(ex);
-        }
-        // --- MOTD ---
-        else if (path.equals("/motd") && method.equals("POST")) {
+        } else if (path.equals("/motd") && method.equals("POST")) {
             handleSetMotd(ex);
-        }
-        // --- 콘솔 ---
-        else if (path.equals("/logs") && method.equals("GET")) {
+        } else if (path.equals("/logs") && method.equals("GET")) {
             handleGetLogs(ex);
         } else if (path.equals("/console") && method.equals("POST")) {
             handleConsole(ex);
@@ -124,7 +115,7 @@ public class ApiHandler implements HttpHandler {
     private void handleKick(HttpExchange ex) throws Exception {
         JsonObject body = readBody(ex);
         String name = getStr(body, "player");
-        String reason = getStr(body, "reason", "대시보드에서 강퇴되었습니다.");
+        String reason = getStr(body, "reason", "Kicked from dashboard.");
 
         Boolean result = runOnMain(() -> {
             Player p = Bukkit.getPlayerExact(name);
@@ -133,14 +124,14 @@ public class ApiHandler implements HttpHandler {
             return true;
         });
 
-        if (result) send(ex, 200, obj("message", name + " 강퇴 완료"));
-        else send(ex, 404, obj("error", "플레이어를 찾을 수 없습니다."));
+        if (result) send(ex, 200, obj("message", name + " kicked."));
+        else send(ex, 404, obj("error", "Player not found."));
     }
 
     private void handleBan(HttpExchange ex) throws Exception {
         JsonObject body = readBody(ex);
         String name = getStr(body, "player");
-        String reason = getStr(body, "reason", "대시보드에서 차단되었습니다.");
+        String reason = getStr(body, "reason", "Banned from dashboard.");
         String expiryStr = body.has("expiry") && !body.get("expiry").isJsonNull()
                 ? body.get("expiry").getAsString() : null;
 
@@ -160,7 +151,7 @@ public class ApiHandler implements HttpHandler {
             return true;
         });
 
-        send(ex, 200, obj("message", name + " 밴 완료"));
+        send(ex, 200, obj("message", name + " banned."));
     }
 
     private void handleUnban(HttpExchange ex) throws Exception {
@@ -172,7 +163,7 @@ public class ApiHandler implements HttpHandler {
             return null;
         });
 
-        send(ex, 200, obj("message", name + " 밴 해제 완료"));
+        send(ex, 200, obj("message", name + " unbanned."));
     }
 
     private void handleGetBanned(HttpExchange ex) throws Exception {
@@ -184,7 +175,7 @@ public class ApiHandler implements HttpHandler {
                 o.addProperty("reason", entry.getReason());
                 o.addProperty("source", entry.getSource());
                 o.addProperty("created", entry.getCreated() != null ? entry.getCreated().toString() : "");
-                o.addProperty("expires", entry.getExpiration() != null ? entry.getExpiration().toString() : "영구");
+                o.addProperty("expires", entry.getExpiration() != null ? entry.getExpiration().toString() : "Permanent");
                 a.add(o);
             }
             return a;
@@ -210,7 +201,7 @@ public class ApiHandler implements HttpHandler {
                 ? body.get("permission").getAsString() : null;
 
         if (message == null || message.isBlank()) {
-            send(ex, 400, obj("error", "message 필드가 필요합니다."));
+            send(ex, 400, obj("error", "The 'message' field is required."));
             return;
         }
 
@@ -233,20 +224,20 @@ public class ApiHandler implements HttpHandler {
             plugin.getAnnouncementManager().update(id, message, interval, enabled, permission)
         );
 
-        if (ok) send(ex, 200, obj("message", "공지 수정 완료"));
-        else send(ex, 404, obj("error", "공지를 찾을 수 없습니다."));
+        if (ok) send(ex, 200, obj("message", "Announcement updated."));
+        else send(ex, 404, obj("error", "Announcement not found."));
     }
 
     private void handleToggleAnnouncement(HttpExchange ex, String id) throws Exception {
         Boolean ok = runOnMain(() -> plugin.getAnnouncementManager().toggle(id));
-        if (ok) send(ex, 200, obj("message", "공지 토글 완료"));
-        else send(ex, 404, obj("error", "공지를 찾을 수 없습니다."));
+        if (ok) send(ex, 200, obj("message", "Announcement toggled."));
+        else send(ex, 404, obj("error", "Announcement not found."));
     }
 
     private void handleDeleteAnnouncement(HttpExchange ex, String id) throws Exception {
         Boolean ok = runOnMain(() -> plugin.getAnnouncementManager().delete(id));
-        if (ok) send(ex, 200, obj("message", "공지 삭제 완료"));
-        else send(ex, 404, obj("error", "공지를 찾을 수 없습니다."));
+        if (ok) send(ex, 200, obj("message", "Announcement deleted."));
+        else send(ex, 404, obj("error", "Announcement not found."));
     }
 
     private void handleGetStatus(HttpExchange ex) throws Exception {
@@ -267,10 +258,10 @@ public class ApiHandler implements HttpHandler {
     private void handleSetMotd(HttpExchange ex) throws Exception {
         JsonObject body = readBody(ex);
         String motd = getStr(body, "motd");
-        if (motd == null) { send(ex, 400, obj("error", "motd 필드가 필요합니다.")); return; }
+        if (motd == null) { send(ex, 400, obj("error", "The 'motd' field is required.")); return; }
         plugin.getConfig().set("web.motd", motd);
         plugin.saveConfig();
-        send(ex, 200, obj("message", "MOTD 변경 완료"));
+        send(ex, 200, obj("message", "MOTD updated."));
     }
 
     private void handleGetLogs(HttpExchange ex) throws IOException {
@@ -298,12 +289,12 @@ public class ApiHandler implements HttpHandler {
         JsonObject body = readBody(ex);
         String command = getStr(body, "command");
         if (command == null || command.isBlank()) {
-            send(ex, 400, obj("error", "command 필드가 필요합니다."));
+            send(ex, 400, obj("error", "The 'command' field is required."));
             return;
         }
         final String cmd = command.trim();
         runOnMain(() -> { Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd); return null; });
-        send(ex, 200, obj("message", "실행 완료"));
+        send(ex, 200, obj("message", "Command executed."));
     }
 
     // --- 유틸리티 ---
@@ -317,7 +308,7 @@ public class ApiHandler implements HttpHandler {
         try {
             return future.get(5, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw new RuntimeException("메인 스레드 응답 시간 초과");
+            throw new RuntimeException("Main thread timed out");
         } catch (ExecutionException e) {
             throw (Exception) e.getCause();
         }

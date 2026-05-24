@@ -54,7 +54,7 @@ public class AnnouncementManager {
             dataConfig.set(path + ".permission", a.getPermission());
         }
         try { dataConfig.save(dataFile); } catch (IOException e) {
-            plugin.getLogger().severe("공지 저장 실패: " + e.getMessage());
+            plugin.getLogger().severe("Failed to save announcements: " + e.getMessage());
         }
     }
 
@@ -110,7 +110,6 @@ public class AnnouncementManager {
             a.setEnabled(enabled);
             if (enabled) startTask(a); else stopTask(id);
         } else if (enabled) {
-            // 인터벌 변경 반영을 위해 재시작
             startTask(a);
         }
         saveAll();

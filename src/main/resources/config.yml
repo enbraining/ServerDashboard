@@ -1,29 +1,29 @@
 web:
-  # HTTP 포트 (내부/API 접근용)
+  # HTTP port (internal/API access)
   port: 8080
-  # MOTD (비워두면 server.properties 값 사용, &a 색상코드 지원)
+  # MOTD (leave blank to use server.properties value; supports & color codes)
   motd: ""
 
-  # HTTPS 설정
+  # HTTPS settings
   https:
     enabled: false
     port: 8443
 
-    # ── ACME (Let's Encrypt 자동 발급) ──────────────────
+    # ── ACME (Let's Encrypt auto-issuance) ─────────────────────
     acme:
       enabled: false
-      domain: "mc.example.com"      # 인증서를 발급할 도메인
-      email: "admin@example.com"    # Let's Encrypt 계정 이메일
-      # HTTP-01 챌린지 포트 (반드시 외부에서 80번으로 접근 가능해야 함)
-      # Oracle: NSG + iptables 80/TCP 허용 필요
+      domain: "mc.example.com"      # Domain to issue a certificate for
+      email: "admin@example.com"    # Let's Encrypt account email
+      # HTTP-01 challenge port (must be reachable externally on port 80)
+      # Oracle: NSG + iptables 80/TCP must be allowed
       challenge-port: 80
 
-    # ── 수동 인증서 (ACME 비활성 시 사용) ────────────────
-    # certbot 기준:
-    #   cert: "/etc/letsencrypt/live/도메인/fullchain.pem"
-    #   key:  "/etc/letsencrypt/live/도메인/privkey.pem"
+    # ── Manual certificate (used when ACME is disabled) ─────────
+    # certbot paths:
+    #   cert: "/etc/letsencrypt/live/domain/fullchain.pem"
+    #   key:  "/etc/letsencrypt/live/domain/privkey.pem"
     cert: ""
     key: ""
 
-  # API 인증 토큰 (반드시 변경하세요!)
+  # API authentication token (change this!)
   token: "changeme-please"

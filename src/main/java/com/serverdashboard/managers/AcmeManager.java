@@ -33,19 +33,15 @@ public class AcmeManager {
     public File getKeyFile()  { return new File(dataFolder, "privkey.pem"); }
     public boolean hasCertificate() { return getCertFile().exists() && getKeyFile().exists(); }
 
-    /**
-     * Let's Encrypt HTTP-01 챌린지로 인증서를 발급합니다.
-     * challengePort 는 외부에서 80번으로 접근 가능해야 합니다.
-     */
     public void issueCertificate(String domain, String email, int challengePort) throws Exception {
-        log("인증서 발급 시작: " + domain + " (챌린지 포트: " + challengePort + ")");
+        log("Certificate issuance started: " + domain + " (challenge port: " + challengePort + ")");
 
         KeyPair accountKey = loadOrCreateKey("acme-account.key");
         KeyPair domainKey  = loadOrCreateKey("domain.key");
 
         Session session = new Session(ACME_URL);
 
-        log("Let's Encrypt 계정 준비 중...");
+        log("Preparing Let's Encrypt account...");
         Account account = new AccountBuilder()
                 .agreeToTermsOfService()
                 .useKeyPair(accountKey)
@@ -53,7 +49,7 @@ public class AcmeManager {
                 .createLogin(session)
                 .getAccount();
 
-        log("인증서 주문 생성 중...");
+        log("Creating certificate order...");
         Order order = account.newOrder().domains(domain).create();
 
         for (Authorization auth : order.getAuthorizations()) {
@@ -61,21 +57,20 @@ public class AcmeManager {
             processChallenge(auth, challengePort);
         }
 
-        log("CSR 생성 및 주문 완료 요청 중...");
+        log("Generating CSR and finalizing order...");
         CSRBuilder csrb = new CSRBuilder();
         csrb.addDomain(domain);
         csrb.sign(domainKey);
         order.execute(csrb.getEncoded());
 
-        waitFor("주문", () -> order.getStatus() == Status.VALID, order::update,
-                order.getStatus() == Status.INVALID ? "주문 실패" : null);
+        waitFor("order", () -> order.getStatus() == Status.VALID, order::update,
+                order.getStatus() == Status.INVALID ? "Order failed" : null);
 
-        log("인증서 다운로드 중...");
+        log("Downloading certificate...");
         Certificate cert = order.getCertificate();
         try (Writer fw = new FileWriter(getCertFile())) {
             cert.writeCertificate(fw);
         }
-        // PKCS8 PEM 형식으로 저장 (WebServer.loadPrivateKey 호환)
         byte[] pkcs8Der = domainKey.getPrivate().getEncoded();
         String pkcs8Pem = "-----BEGIN PRIVATE KEY-----\n"
                 + java.util.Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(pkcs8Der)
@@ -84,17 +79,17 @@ public class AcmeManager {
             fw.write(pkcs8Pem);
         }
 
-        log("인증서 발급 완료! " + getCertFile().getPath());
+        log("Certificate issued! " + getCertFile().getPath());
     }
 
     private void processChallenge(Authorization auth, int challengePort) throws Exception {
         Http01Challenge challenge = auth.<Http01Challenge>findChallenge(Http01Challenge.TYPE).orElse(null);
-        if (challenge == null) throw new AcmeException("HTTP-01 챌린지를 찾을 수 없습니다.");
+        if (challenge == null) throw new AcmeException("HTTP-01 challenge not found.");
 
         String token = challenge.getToken();
         String keyAuth = challenge.getAuthorization();
 
-        log("HTTP-01 챌린지 서버 시작 (:" + challengePort + ")...");
+        log("Starting HTTP-01 challenge server on port " + challengePort + "...");
         HttpServer srv = HttpServer.create(new InetSocketAddress(challengePort), 0);
         srv.createContext("/.well-known/acme-challenge/" + token, ex -> {
             ex.getRequestBody().readAllBytes();
@@ -109,20 +104,19 @@ public class AcmeManager {
 
         try {
             challenge.trigger();
-            log("Let's Encrypt 검증 대기 중...");
-            waitFor("도메인 검증",
+            log("Waiting for Let's Encrypt validation...");
+            waitFor("domain validation",
                     () -> auth.getStatus() == Status.VALID,
                     auth::update,
                     auth.getStatus() == Status.INVALID
-                            ? "도메인 검증 실패: " + auth.getIdentifier().getDomain()
+                            ? "Domain validation failed: " + auth.getIdentifier().getDomain()
                             : null);
-            log("도메인 검증 성공!");
+            log("Domain validation successful!");
         } finally {
             srv.stop(0);
         }
     }
 
-    /** 인증서가 30일 이내로 만료되는지 확인합니다. */
     public boolean needsRenewal() {
         if (!hasCertificate()) return false;
         try (InputStream is = new FileInputStream(getCertFile())) {
@@ -135,15 +129,14 @@ public class AcmeManager {
         }
     }
 
-    /** 인증서 만료일을 사람이 읽기 좋은 문자열로 반환합니다. */
     public String getCertExpiry() {
-        if (!hasCertificate()) return "없음";
+        if (!hasCertificate()) return "N/A";
         try (InputStream is = new FileInputStream(getCertFile())) {
             X509Certificate cert = (X509Certificate)
                     CertificateFactory.getInstance("X.509").generateCertificate(is);
             return cert.getNotAfter().toString();
         } catch (Exception e) {
-            return "읽기 실패";
+            return "Read failed";
         }
     }
 
@@ -172,7 +165,7 @@ public class AcmeManager {
             Thread.sleep(3000);
             update.run();
         }
-        throw new AcmeException(what + " 시간 초과");
+        throw new AcmeException(what + " timed out");
     }
 
     private void log(String msg) {

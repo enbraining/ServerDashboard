@@ -7,7 +7,7 @@ public class Announcement {
     private String message;
     private int intervalSeconds;
     private boolean enabled;
-    private String permission; // null = 전체 공지
+    private String permission; // null = broadcast to all
 
     public Announcement(String message, int intervalSeconds, boolean enabled, String permission) {
         this.id = UUID.randomUUID().toString().substring(0, 8);

@@ -39,28 +39,27 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
 
         if (token.equals("changeme-please")) {
             getLogger().warning("===========================================");
-            getLogger().warning(" config.yml 의 web.token 을 반드시 변경하세요!");
+            getLogger().warning(" Please change web.token in config.yml!");
             getLogger().warning("===========================================");
         }
 
         webServer = new WebServer(this, port, token);
         try {
             webServer.start();
-            getLogger().info("대시보드 웹서버 시작: http://localhost:" + port);
+            getLogger().info("Dashboard web server started: http://localhost:" + port);
         } catch (Exception e) {
-            getLogger().severe("웹서버 시작 실패: " + e.getMessage());
+            getLogger().severe("Failed to start web server: " + e.getMessage());
         }
 
-        // ACME 자동 갱신 스케줄러 (1일마다 체크)
         if (getConfig().getBoolean("web.https.acme.enabled", false)) {
             long dayTicks = 20L * 60 * 60 * 24;
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::autoRenewIfNeeded, dayTicks, dayTicks);
-            getLogger().info("[ACME] 자동 갱신 스케줄러 시작 (만료 " + AcmeManager.RENEW_BEFORE_DAYS + "일 전 갱신)");
+            getLogger().info("[ACME] Auto-renewal scheduler started (renews " + AcmeManager.RENEW_BEFORE_DAYS + " days before expiry)");
         }
 
         Bukkit.getPluginManager().registerEvents(this, this);
         announcementManager.startAll();
-        getLogger().info("ServerDashboard 플러그인 활성화 완료");
+        getLogger().info("ServerDashboard plugin enabled.");
     }
 
     @Override
@@ -71,21 +70,21 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
             announcementManager.stopAll();
             announcementManager.saveAll();
         }
-        getLogger().info("ServerDashboard 플러그인 비활성화");
+        getLogger().info("ServerDashboard plugin disabled.");
     }
 
     private void autoRenewIfNeeded() {
         if (!acmeManager.needsRenewal()) return;
-        getLogger().info("[ACME] 인증서가 곧 만료됩니다. 자동 갱신을 시작합니다...");
+        getLogger().info("[ACME] Certificate expiring soon. Starting auto-renewal...");
         String domain        = getConfig().getString("web.https.acme.domain", "");
         String email         = getConfig().getString("web.https.acme.email", "");
         int challengePort    = getConfig().getInt("web.https.acme.challenge-port", 80);
         try {
             acmeManager.issueCertificate(domain, email, challengePort);
             webServer.reloadSsl();
-            getLogger().info("[ACME] 자동 갱신 완료.");
+            getLogger().info("[ACME] Auto-renewal complete.");
         } catch (Exception e) {
-            getLogger().severe("[ACME] 자동 갱신 실패: " + e.getMessage());
+            getLogger().severe("[ACME] Auto-renewal failed: " + e.getMessage());
         }
     }
 
@@ -94,7 +93,7 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
         if (!command.getName().equalsIgnoreCase("dashboard")) return false;
 
         if (!sender.hasPermission("serverdashboard.admin")) {
-            sender.sendMessage("§c권한이 없습니다.");
+            sender.sendMessage("§cYou do not have permission.");
             return true;
         }
 
@@ -103,49 +102,49 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
             String token = getConfig().getString("web.token", "");
             int httpsPort = getConfig().getInt("web.https.port", 8443);
             boolean httpsEnabled = getConfig().getBoolean("web.https.enabled", false);
-            sender.sendMessage("§a[Dashboard] §fHTTP:  §bhttp://서버IP:" + port);
+            sender.sendMessage("§a[Dashboard] §fHTTP:  §bhttp://your-server-ip:" + port);
             if (httpsEnabled)
-                sender.sendMessage("§a[Dashboard] §fHTTPS: §bhttps://서버IP:" + httpsPort);
-            sender.sendMessage("§a[Dashboard] §fAPI 토큰: §e" + token);
+                sender.sendMessage("§a[Dashboard] §fHTTPS: §bhttps://your-server-ip:" + httpsPort);
+            sender.sendMessage("§a[Dashboard] §fAPI Token: §e" + token);
             if (acmeManager.hasCertificate())
-                sender.sendMessage("§a[Dashboard] §f인증서 만료: §e" + acmeManager.getCertExpiry());
+                sender.sendMessage("§a[Dashboard] §fCert expiry: §e" + acmeManager.getCertExpiry());
             return true;
         }
 
         switch (args[0].toLowerCase()) {
             case "reload" -> {
                 reloadConfig();
-                sender.sendMessage("§a[Dashboard] §f설정 파일 새로고침 완료.");
+                sender.sendMessage("§a[Dashboard] §fConfig reloaded.");
             }
             case "reload-ssl" -> {
-                if (webServer == null) { sender.sendMessage("§c웹서버가 실행 중이지 않습니다."); return true; }
+                if (webServer == null) { sender.sendMessage("§cWeb server is not running."); return true; }
                 webServer.reloadSsl();
-                sender.sendMessage("§a[Dashboard] §fSSL 인증서 리로드 완료.");
+                sender.sendMessage("§a[Dashboard] §fSSL certificate reloaded.");
             }
             case "cert-issue" -> {
                 if (!getConfig().getBoolean("web.https.acme.enabled", false)) {
-                    sender.sendMessage("§c[Dashboard] §fconfig.yml 에서 web.https.acme.enabled: true 를 설정하세요.");
+                    sender.sendMessage("§c[Dashboard] §fSet web.https.acme.enabled: true in config.yml first.");
                     return true;
                 }
                 String domain     = getConfig().getString("web.https.acme.domain", "");
                 String email      = getConfig().getString("web.https.acme.email", "");
                 int challengePort = getConfig().getInt("web.https.acme.challenge-port", 80);
                 if (domain.isBlank() || email.isBlank()) {
-                    sender.sendMessage("§c[Dashboard] §fdomain 과 email 을 config.yml 에 설정하세요.");
+                    sender.sendMessage("§c[Dashboard] §fSet domain and email in config.yml.");
                     return true;
                 }
-                sender.sendMessage("§a[Dashboard] §f인증서 발급 시작... 콘솔을 확인하세요.");
+                sender.sendMessage("§a[Dashboard] §fStarting certificate issuance... Check the console.");
                 Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
                     try {
                         acmeManager.issueCertificate(domain, email, challengePort);
                         webServer.reloadSsl();
                         Bukkit.getScheduler().runTask(this, () ->
-                            sender.sendMessage("§a[Dashboard] §f인증서 발급 및 HTTPS 적용 완료!")
+                            sender.sendMessage("§a[Dashboard] §fCertificate issued and HTTPS applied!")
                         );
                     } catch (Exception e) {
-                        getLogger().severe("[ACME] 발급 실패: " + e.getMessage());
+                        getLogger().severe("[ACME] Issuance failed: " + e.getMessage());
                         Bukkit.getScheduler().runTask(this, () ->
-                            sender.sendMessage("§c[Dashboard] §f발급 실패: " + e.getMessage())
+                            sender.sendMessage("§c[Dashboard] §fIssuance failed: " + e.getMessage())
                         );
                     }
                 });
@@ -156,10 +155,10 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
                 String newToken = HexFormat.of().formatHex(bytes);
                 getConfig().set("web.token", newToken);
                 saveConfig();
-                sender.sendMessage("§a[Dashboard] §f새 토큰: §e" + newToken);
-                sender.sendMessage("§c웹서버를 재시작해야 적용됩니다.");
+                sender.sendMessage("§a[Dashboard] §fNew token: §e" + newToken);
+                sender.sendMessage("§cRestart the web server for the change to take effect.");
             }
-            default -> sender.sendMessage("§c사용법: /dashboard [reload|reload-ssl|cert-issue|token]");
+            default -> sender.sendMessage("§cUsage: /dashboard [reload|reload-ssl|cert-issue|token]");
         }
         return true;
     }
