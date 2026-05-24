@@ -1,0 +1,7 @@
+web:
+  # 대시보드 웹서버 포트
+  port: 8080
+  # API 인증 토큰 (반드시 변경하세요!)
+  token: "changeme-please"
+
+# 공지 설정은 announcements.yml 에 자동 저장됩니다.

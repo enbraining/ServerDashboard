@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #5865f2;
+    --accent-hover: #4752c4;
+    --green: #57f287;
+    --red: #ed4245;
+    --yellow: #faa61a;
+    --text: #e3e5e8;
+    --text-muted: #8b8fa8;
+    --danger: #ed4245;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 1rem 0; flex-shrink: 0; position: fixed; height: 100vh;
+  }
+  .main { margin-left: 220px; flex: 1; padding: 2rem; max-width: 1200px; }
+
+  /* SIDEBAR */
+  .logo { padding: 0.5rem 1.2rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+  .logo h1 { font-size: 1rem; font-weight: 700; color: var(--accent); letter-spacing: .5px; }
+  .logo p { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.2rem;
+    cursor: pointer; border-radius: 6px; margin: 0 0.5rem 2px; transition: background .15s;
+    font-size: 0.88rem; color: var(--text-muted); user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .nav-item .icon { font-size: 1.1rem; }
+  .sidebar-bottom { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; }
+  .server-info { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* TOKEN MODAL */
+  .token-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex;
+    align-items: center; justify-content: center; z-index: 1000;
+  }
+  .token-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 2rem; width: 360px; text-align: center;
+  }
+  .token-box h2 { margin-bottom: 1rem; font-size: 1.2rem; }
+  .token-box p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .section-header h2 { font-size: 1.3rem; font-weight: 600; }
+
+  /* CARDS & TABLES */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; margin-bottom: 1.5rem;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--surface2); text-align: left; padding: 0.65rem 1rem;
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.025); }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat-card .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 0.4rem 0.85rem; border: none; border-radius: 6px; cursor: pointer;
+    font-size: 0.82rem; font-weight: 500; transition: filter .15s, transform .1s; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.15); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { filter: brightness(1.15); }
+  .btn-warn { background: var(--yellow); color: #000; }
+  .btn-warn:hover { filter: brightness(1.1); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+  .btn-group { display: flex; gap: 6px; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 1rem; }
+  label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 5px; }
+  input, textarea, select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 0.5rem 0.75rem; font-size: 0.88rem; font-family: inherit;
+    transition: border-color .15s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
+    align-items: center; justify-content: center; z-index: 500;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.8rem; width: 440px; max-width: 95vw;
+  }
+  .modal h3 { margin-bottom: 1.2rem; font-size: 1.1rem; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.2rem; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  }
+  .badge-green { background: rgba(87,242,135,.15); color: var(--green); }
+  .badge-red { background: rgba(237,66,69,.15); color: var(--red); }
+  .badge-yellow { background: rgba(250,166,26,.15); color: var(--yellow); }
+
+  /* ANNOUNCEMENT CARD */
+  .ann-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .ann-body { flex: 1; }
+  .ann-msg { font-size: 0.92rem; margin-bottom: 6px; word-break: break-all; }
+  .ann-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+  .ann-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* TOGGLE */
+  .toggle {
+    position: relative; width: 40px; height: 22px; cursor: pointer;
+  }
+  .toggle input { display: none; }
+  .toggle-track {
+    position: absolute; inset: 0; background: var(--border); border-radius: 99px; transition: background .2s;
+  }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+    background: #fff; border-radius: 50%; transition: transform .2s;
+  }
+  input:checked + .toggle-track { background: var(--accent); }
+  input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+  /* PING */
+  .ping-bar { display: inline-block; width: 6px; height: 14px; border-radius: 2px; margin-right: 2px; vertical-align: middle; }
+  .ping-good { background: var(--green); }
+  .ping-ok { background: var(--yellow); }
+  .ping-bad { background: var(--red); }
+
+  /* MISC */
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .color-preview {
+    display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;
+    background: var(--surface2); font-family: monospace;
+  }
+  .alert { padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; }
+  .alert-error { background: rgba(237,66,69,.15); border: 1px solid rgba(237,66,69,.3); color: var(--red); }
+  .alert-success { background: rgba(87,242,135,.15); border: 1px solid rgba(87,242,135,.3); color: var(--green); }
+  #toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast-item {
+    padding: 0.7rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
+    animation: slideIn .25s ease; max-width: 320px;
+  }
+  .toast-item.success { background: #23453a; color: var(--green); border: 1px solid rgba(87,242,135,.3); }
+  .toast-item.error { background: #452329; color: var(--red); border: 1px solid rgba(237,66,69,.3); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+  .refresh-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; padding: 4px; transition: color .15s; }
+  .refresh-btn:hover { color: var(--accent); }
+  .mc-color { font-family: monospace; font-size: 0.78rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- TOKEN SETUP -->
+<div class="token-overlay" id="tokenOverlay">
+  <div class="token-box">
+    <h2>🔐 API 토큰 입력</h2>
+    <p>config.yml 에 설정된 <code>web.token</code> 값을 입력하세요.</p>
+    <div class="form-group">
+      <input type="password" id="tokenInput" placeholder="API 토큰..." autocomplete="off">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="setToken()">접속</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>⛏ Server Dashboard</h1>
+      <p id="sidebarVersion">로딩 중...</p>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="navigate('status')" data-nav="status">
+        <span class="icon">📊</span> 서버 상태
+      </div>
+      <div class="nav-item" onclick="navigate('players')" data-nav="players">
+        <span class="icon">👥</span> 플레이어
+      </div>
+      <div class="nav-item" onclick="navigate('bans')" data-nav="bans">
+        <span class="icon">🚫</span> 밴 목록
+      </div>
+      <div class="nav-item" onclick="navigate('announcements')" data-nav="announcements">
+        <span class="icon">📢</span> 공지 관리
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="server-info">
+        <span class="status-dot" id="connDot"></span>
+        <span id="connStatus">연결 중...</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- STATUS -->
+    <section class="section active" id="section-status">
+      <div class="section-header">
+        <h2>서버 상태</h2>
+        <button class="refresh-btn" onclick="loadStatus()" title="새로고침">↻</button>
+      </div>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="stat-value" id="st-online">-</div><div class="stat-label">온라인 플레이어</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-max">-</div><div class="stat-label">최대 플레이어</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-tps">-</div><div class="stat-label">TPS</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-anns">-</div><div class="stat-label">활성 공지</div></div>
+      </div>
+      <div class="card" style="padding:1rem 1.2rem">
+        <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px">서버 버전</div>
+        <div id="st-version" style="font-family:monospace;font-size:.88rem">-</div>
+        <div style="font-size:.82rem;color:var(--text-muted);margin:12px 0 8px">MOTD</div>
+        <div id="st-motd" style="font-size:.88rem">-</div>
+      </div>
+    </section>
+
+    <!-- PLAYERS -->
+    <section class="section" id="section-players">
+      <div class="section-header">
+        <h2>온라인 플레이어</h2>
+        <div style="display:flex;gap:8px">
+          <button class="refresh-btn" onclick="loadPlayers()" title="새로고침">↻</button>
+          <button class="btn btn-warn btn-sm" onclick="openKickModal()">+ 강퇴</button>
+          <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>플레이어</th><th>핑</th><th>월드</th><th>UUID</th><th>권한</th><th>작업</th>
+            </tr>
+          </thead>
+          <tbody id="playerTable"><tr><td colspan="6" class="empty-state">로딩 중...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BANS -->
+    <section class="section" id="section-bans">
+      <div class="section-header">
+        <h2>밴 목록</h2>
+        <div style="display:flex;gap:8px">
+          <button class="refresh-btn" onclick="loadBans()" title="새로고침">↻</button>
+          <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴 추가</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>플레이어</th><th>사유</th><th>처리자</th><th>만료일</th><th>작업</th></tr>
+          </thead>
+          <tbody id="banTable"><tr><td colspan="5" class="empty-state">로딩 중...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ANNOUNCEMENTS -->
+    <section class="section" id="section-announcements">
+      <div class="section-header">
+        <h2>공지 관리</h2>
+        <button class="btn btn-primary btn-sm" onclick="openAnnModal()">+ 공지 추가</button>
+      </div>
+      <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">
+        색상 코드: <span class="color-preview">&amp;c빨강</span> <span class="color-preview">&amp;a초록</span> <span class="color-preview">&amp;e노랑</span> <span class="color-preview">&amp;b하늘</span> <span class="color-preview">&amp;l굵게</span> <span class="color-preview">&amp;r초기화</span>
+      </div>
+      <div id="annList"><div class="empty-state"><div class="icon">📢</div>로딩 중...</div></div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<!-- KICK MODAL -->
+<div class="modal-overlay" id="kickModal">
+  <div class="modal">
+    <h3>⚡ 플레이어 강퇴</h3>
+    <div class="form-group">
+      <label>플레이어 이름</label>
+      <input type="text" id="kickPlayer" placeholder="닉네임">
+    </div>
+    <div class="form-group">
+      <label>사유</label>
+      <input type="text" id="kickReason" placeholder="강퇴 사유 (선택)">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('kickModal')">취소</button>
+      <button class="btn btn-warn" onclick="doKick()">강퇴</button>
+    </div>
+  </div>
+</div>
+
+<!-- BAN MODAL -->
+<div class="modal-overlay" id="banModal">
+  <div class="modal">
+    <h3>🚫 플레이어 밴</h3>
+    <div class="form-group">
+      <label>플레이어 이름</label>
+      <input type="text" id="banPlayer" placeholder="닉네임">
+    </div>
+    <div class="form-group">
+      <label>사유</label>
+      <input type="text" id="banReason" placeholder="밴 사유 (선택)">
+    </div>
+    <div class="form-group">
+      <label>만료일시 (비워두면 영구)</label>
+      <input type="datetime-local" id="banExpiry">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('banModal')">취소</button>
+      <button class="btn btn-danger" onclick="doBan()">밴</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="annModal">
+  <div class="modal">
+    <h3 id="annModalTitle">📢 공지 추가</h3>
+    <input type="hidden" id="annEditId">
+    <div class="form-group">
+      <label>공지 메시지 (&amp;코드 사용 가능)</label>
+      <textarea id="annMessage" placeholder="&a[공지] &f안녕하세요!"></textarea>
+    </div>
+    <div class="form-group">
+      <label>주기 (초)</label>
+      <input type="number" id="annInterval" value="300" min="10">
+    </div>
+    <div class="form-group">
+      <label>권한 필터 (비워두면 전체)</label>
+      <input type="text" id="annPermission" placeholder="예: vip.notify">
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px">
+      <label style="margin:0">활성화</label>
+      <label class="toggle">
+        <input type="checkbox" id="annEnabled" checked>
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('annModal')">취소</button>
+      <button class="btn btn-primary" onclick="saveAnnouncement()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('dashboard_token') || '';
+let currentNav = 'status';
+let autoRefreshTimer = null;
+
+// --- TOKEN ---
+function checkToken() {
+  if (!token) { document.getElementById('tokenOverlay').style.display = 'flex'; }
+  else { document.getElementById('tokenOverlay').style.display = 'none'; init(); }
+}
+
+function setToken() {
+  const v = document.getElementById('tokenInput').value.trim();
+  if (!v) return;
+  token = v;
+  localStorage.setItem('dashboard_token', token);
+  document.getElementById('tokenOverlay').style.display = 'none';
+  init();
+}
+
+document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') setToken(); });
+
+// --- API ---
+async function api(method, path, body) {
+  try {
+    const res = await fetch('/api' + path, {
+      method,
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (res.status === 401) {
+      token = '';
+      localStorage.removeItem('dashboard_token');
+      document.getElementById('tokenOverlay').style.display = 'flex';
+      throw new Error('인증 실패');
+    }
+    return { ok: res.ok, status: res.status, data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// --- INIT ---
+function init() {
+  loadStatus();
+  loadPlayers();
+  loadBans();
+  loadAnnouncements();
+  setConnectionStatus(true);
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if (currentNav === 'status') loadStatus();
+    if (currentNav === 'players') loadPlayers();
+  }, 15000);
+}
+
+// --- NAVIGATION ---
+function navigate(section) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-nav="${section}"]`).classList.add('active');
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-' + section).classList.add('active');
+  currentNav = section;
+  if (section === 'players') loadPlayers();
+  if (section === 'bans') loadBans();
+  if (section === 'announcements') loadAnnouncements();
+  if (section === 'status') loadStatus();
+}
+
+// --- STATUS ---
+async function loadStatus() {
+  const r = await api('GET', '/status');
+  if (!r.ok) { setConnectionStatus(false); return; }
+  setConnectionStatus(true);
+  const d = r.data;
+  document.getElementById('st-online').textContent = d.online;
+  document.getElementById('st-max').textContent = d.max;
+  document.getElementById('st-tps').textContent = d.tps;
+  document.getElementById('st-version').textContent = d.version;
+  document.getElementById('st-motd').textContent = d.motd;
+  document.getElementById('sidebarVersion').textContent = d.version.split(' ')[0] || '';
+
+  // TPS 색상
+  const tps = parseFloat(d.tps);
+  const tpsEl = document.getElementById('st-tps');
+  tpsEl.style.color = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
+
+  const r2 = await api('GET', '/announcements');
+  if (r2.ok) {
+    document.getElementById('st-anns').textContent = r2.data.filter(a => a.enabled).length;
+  }
+}
+
+// --- PLAYERS ---
+async function loadPlayers() {
+  const r = await api('GET', '/players');
+  const tbody = document.getElementById('playerTable');
+  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:var(--red)">로드 실패</td></tr>`; return; }
+  if (!r.data.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🎮</div>온라인 플레이어 없음</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = r.data.map(p => {
+    const pingCls = p.ping < 80 ? 'ping-good' : p.ping < 200 ? 'ping-ok' : 'ping-bad';
+    const opBadge = p.op ? '<span class="badge badge-yellow">OP</span> ' : '';
+    return `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td><span class="ping-bar ${pingCls}"></span>${p.ping}ms</td>
+      <td>${esc(p.world)}</td>
+      <td><span style="font-family:monospace;font-size:.75rem;color:var(--text-muted)">${p.uuid.substring(0,8)}…</span></td>
+      <td>${opBadge}</td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-warn btn-sm" onclick="kickPlayer('${esc(p.name)}')">강퇴</button>
+          <button class="btn btn-danger btn-sm" onclick="banPlayer('${esc(p.name)}')">밴</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// --- BANS ---
+async function loadBans() {
+  const r = await api('GET', '/banned');
+  const tbody = document.getElementById('banTable');
+  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color:var(--red)">로드 실패</td></tr>`; return; }
+  if (!r.data.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">✅</div>밴된 플레이어 없음</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = r.data.map(b => `<tr>
+    <td><strong>${esc(b.player)}</strong></td>
+    <td>${esc(b.reason || '-')}</td>
+    <td>${esc(b.source || '-')}</td>
+    <td>${b.expires === '영구' ? '<span class="badge badge-red">영구</span>' : esc(b.expires)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="unbanPlayer('${esc(b.player)}')">밴 해제</button></td>
+  </tr>`).join('');
+}
+
+// --- ANNOUNCEMENTS ---
+async function loadAnnouncements() {
+  const r = await api('GET', '/announcements');
+  const container = document.getElementById('annList');
+  if (!r.ok) { container.innerHTML = `<div class="empty-state" style="color:var(--red)">로드 실패</div>`; return; }
+  if (!r.data.length) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📢</div><div>공지가 없습니다.<br><small>공지 추가 버튼을 눌러 생성하세요.</small></div></div>`;
+    return;
+  }
+  container.innerHTML = r.data.map(a => {
+    const intLabel = formatInterval(a.interval);
+    const perm = a.permission ? `<span>권한: <code>${esc(a.permission)}</code></span>` : '<span>전체 대상</span>';
+    const statusBadge = a.enabled ? '<span class="badge badge-green">활성</span>' : '<span class="badge badge-red">비활성</span>';
+    return `<div class="ann-card" id="ann-${a.id}">
+      <div class="ann-body">
+        <div class="ann-msg">${renderMcColor(a.message)}</div>
+        <div class="ann-meta">
+          ${statusBadge}
+          <span>⏱ ${intLabel}마다</span>
+          ${perm}
+          <span class="mc-color">${esc(a.message)}</span>
+        </div>
+      </div>
+      <div class="ann-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAnn('${a.id}')">${a.enabled ? '⏸ 일시정지' : '▶ 시작'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="editAnn(${JSON.stringify(a).replace(/"/g, '&quot;')})">✏ 편집</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAnn('${a.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatInterval(s) {
+  if (s < 60) return `${s}초`;
+  if (s < 3600) return `${Math.round(s/60)}분`;
+  return `${Math.round(s/3600)}시간`;
+}
+
+// 마인크래프트 색상 코드 렌더링
+function renderMcColor(text) {
+  const map = {
+    '0':'#000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000',
+    '5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF',
+    'a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF',
+  };
+  let result = '<span>';
+  const parts = text.split(/&([0-9a-fklmnor])/i);
+  let bold = false, italic = false;
+  parts.forEach((part, i) => {
+    if (i % 2 === 0) { result += esc(part); }
+    else {
+      const code = part.toLowerCase();
+      if (code === 'l') { bold = true; result += '<b>'; }
+      else if (code === 'o') { italic = true; result += '<i>'; }
+      else if (code === 'r') {
+        if (bold) result += '</b>';
+        if (italic) result += '</i>';
+        bold = italic = false;
+        result += '</span><span>';
+      } else if (map[code]) {
+        result += `</span><span style="color:${map[code]}">`;
+      }
+    }
+  });
+  result += '</span>';
+  return result;
+}
+
+// --- ACTIONS ---
+function kickPlayer(name) {
+  document.getElementById('kickPlayer').value = name;
+  openModal('kickModal');
+}
+function banPlayer(name) {
+  document.getElementById('banPlayer').value = name;
+  openModal('banModal');
+}
+
+async function doKick() {
+  const player = document.getElementById('kickPlayer').value.trim();
+  const reason = document.getElementById('kickReason').value.trim();
+  if (!player) return;
+  const r = await api('POST', '/kick', { player, reason });
+  if (r.ok) { toast(r.data.message, 'success'); closeModal('kickModal'); loadPlayers(); }
+  else toast(r.data?.error || '강퇴 실패', 'error');
+}
+
+async function doBan() {
+  const player = document.getElementById('banPlayer').value.trim();
+  const reason = document.getElementById('banReason').value.trim();
+  const expiry = document.getElementById('banExpiry').value || null;
+  if (!player) return;
+  const r = await api('POST', '/ban', { player, reason, expiry });
+  if (r.ok) { toast(r.data.message, 'success'); closeModal('banModal'); loadBans(); loadPlayers(); }
+  else toast(r.data?.error || '밴 실패', 'error');
+}
+
+async function unbanPlayer(name) {
+  if (!confirm(`${name} 의 밴을 해제하시겠습니까?`)) return;
+  const r = await api('POST', '/unban', { player: name });
+  if (r.ok) { toast(r.data.message, 'success'); loadBans(); }
+  else toast(r.data?.error || '밴 해제 실패', 'error');
+}
+
+function openAnnModal() {
+  document.getElementById('annModalTitle').textContent = '📢 공지 추가';
+  document.getElementById('annEditId').value = '';
+  document.getElementById('annMessage').value = '';
+  document.getElementById('annInterval').value = '300';
+  document.getElementById('annPermission').value = '';
+  document.getElementById('annEnabled').checked = true;
+  openModal('annModal');
+}
+
+function editAnn(a) {
+  document.getElementById('annModalTitle').textContent = '✏ 공지 편집';
+  document.getElementById('annEditId').value = a.id;
+  document.getElementById('annMessage').value = a.message;
+  document.getElementById('annInterval').value = a.interval;
+  document.getElementById('annPermission').value = a.permission || '';
+  document.getElementById('annEnabled').checked = a.enabled;
+  openModal('annModal');
+}
+
+async function saveAnnouncement() {
+  const id = document.getElementById('annEditId').value;
+  const message = document.getElementById('annMessage').value.trim();
+  const interval = parseInt(document.getElementById('annInterval').value) || 300;
+  const permission = document.getElementById('annPermission').value.trim() || null;
+  const enabled = document.getElementById('annEnabled').checked;
+  if (!message) { toast('메시지를 입력하세요.', 'error'); return; }
+  const body = { message, interval, permission, enabled };
+  const r = id
+    ? await api('PUT', `/announcements/${id}`, body)
+    : await api('POST', '/announcements', body);
+  if (r.ok) { toast(id ? '공지 수정 완료' : '공지 추가 완료', 'success'); closeModal('annModal'); loadAnnouncements(); }
+  else toast(r.data?.error || '저장 실패', 'error');
+}
+
+async function toggleAnn(id) {
+  const r = await api('POST', `/announcements/${id}/toggle`);
+  if (r.ok) { toast(r.data.message, 'success'); loadAnnouncements(); }
+  else toast(r.data?.error || '오류', 'error');
+}
+
+async function deleteAnn(id) {
+  if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+  const r = await api('DELETE', `/announcements/${id}`);
+  if (r.ok) { toast('공지 삭제 완료', 'success'); loadAnnouncements(); }
+  else toast(r.data?.error || '삭제 실패', 'error');
+}
+
+// --- MODAL ---
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openKickModal() { document.getElementById('kickPlayer').value = ''; document.getElementById('kickReason').value = ''; openModal('kickModal'); }
+function openBanModal() { document.getElementById('banPlayer').value = ''; document.getElementById('banReason').value = ''; document.getElementById('banExpiry').value = ''; openModal('banModal'); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// --- TOAST ---
+function toast(msg, type = 'success') {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// --- STATUS ---
+function setConnectionStatus(connected) {
+  const dot = document.getElementById('connDot');
+  const txt = document.getElementById('connStatus');
+  dot.style.background = connected ? 'var(--green)' : 'var(--red)';
+  txt.textContent = connected ? '연결됨' : '연결 끊김';
+}
+
+// --- UTILS ---
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// --- START ---
+checkToken();
+</script>
+</body>
+</html>
