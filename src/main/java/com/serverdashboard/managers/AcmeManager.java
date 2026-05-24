@@ -75,8 +75,13 @@ public class AcmeManager {
         try (Writer fw = new FileWriter(getCertFile())) {
             cert.writeCertificate(fw);
         }
+        // PKCS8 PEM 형식으로 저장 (WebServer.loadPrivateKey 호환)
+        byte[] pkcs8Der = domainKey.getPrivate().getEncoded();
+        String pkcs8Pem = "-----BEGIN PRIVATE KEY-----\n"
+                + java.util.Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(pkcs8Der)
+                + "\n-----END PRIVATE KEY-----\n";
         try (Writer fw = new FileWriter(getKeyFile())) {
-            KeyPairUtils.writeKeyPair(domainKey, fw);
+            fw.write(pkcs8Pem);
         }
 
         log("인증서 발급 완료! " + getCertFile().getPath());
