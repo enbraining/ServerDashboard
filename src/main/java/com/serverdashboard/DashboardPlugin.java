@@ -4,15 +4,19 @@ import com.serverdashboard.managers.AcmeManager;
 import com.serverdashboard.managers.AnnouncementManager;
 import com.serverdashboard.managers.LogManager;
 import com.serverdashboard.web.WebServer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.security.SecureRandom;
 import java.util.HexFormat;
 
-public class DashboardPlugin extends JavaPlugin {
+public class DashboardPlugin extends JavaPlugin implements Listener {
     private static DashboardPlugin instance;
     private WebServer webServer;
     private AnnouncementManager announcementManager;
@@ -54,6 +58,7 @@ public class DashboardPlugin extends JavaPlugin {
             getLogger().info("[ACME] 자동 갱신 스케줄러 시작 (만료 " + AcmeManager.RENEW_BEFORE_DAYS + "일 전 갱신)");
         }
 
+        Bukkit.getPluginManager().registerEvents(this, this);
         announcementManager.startAll();
         getLogger().info("ServerDashboard 플러그인 활성화 완료");
     }
@@ -157,6 +162,14 @@ public class DashboardPlugin extends JavaPlugin {
             default -> sender.sendMessage("§c사용법: /dashboard [reload|reload-ssl|cert-issue|token]");
         }
         return true;
+    }
+
+    @EventHandler
+    public void onServerPing(ServerListPingEvent e) {
+        String motd = getConfig().getString("web.motd", "");
+        if (motd != null && !motd.isBlank()) {
+            e.motd(LegacyComponentSerializer.legacyAmpersand().deserialize(motd));
+        }
     }
 
     public static DashboardPlugin getInstance() { return instance; }

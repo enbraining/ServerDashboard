@@ -6,30 +6,31 @@
 <title>Server Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
 :root {
-  --bg:          #0b0b0f;
-  --surface:     #111118;
-  --surface-2:   #17171f;
-  --surface-3:   #1d1d28;
-  --border:      #1e1e2a;
-  --border-2:    #28283a;
-  --accent:      #6366f1;
-  --accent-h:    #5254cc;
-  --accent-2:    #a5b4fc;
-  --accent-dim:  rgba(99,102,241,.13);
-  --green:       #22c55e;
-  --green-dim:   rgba(34,197,94,.12);
-  --red:         #ef4444;
-  --red-dim:     rgba(239,68,68,.12);
-  --yellow:      #f59e0b;
-  --yellow-dim:  rgba(245,158,11,.12);
-  --text:        #f0f0f5;
-  --text-2:      #7c7c9a;
-  --text-3:      #3e3e55;
-  --font:        'Inter', system-ui, sans-serif;
-  --mono:        'JetBrains Mono', 'Consolas', monospace;
-  --r:           8px;
+  --bg:         #0b0b0f;
+  --surface:    #111118;
+  --surface-2:  #17171f;
+  --surface-3:  #1d1d28;
+  --border:     #1e1e2a;
+  --border-2:   #28283a;
+  --accent:     #6366f1;
+  --accent-h:   #5254cc;
+  --accent-2:   #a5b4fc;
+  --accent-dim: rgba(99,102,241,.13);
+  --green:      #22c55e;
+  --green-dim:  rgba(34,197,94,.12);
+  --red:        #ef4444;
+  --red-dim:    rgba(239,68,68,.12);
+  --yellow:     #f59e0b;
+  --yellow-dim: rgba(245,158,11,.12);
+  --text:       #f0f0f5;
+  --text-2:     #7c7c9a;
+  --text-3:     #3e3e55;
+  --font:       'Inter', system-ui, sans-serif;
+  --mono:       'JetBrains Mono', 'Consolas', monospace;
+  --r:          8px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -38,10 +39,10 @@ body {
   font-size: 13.5px; line-height: 1.5; -webkit-font-smoothing: antialiased;
 }
 
-/* ── LAYOUT ─────────────────────────────────────── */
+/* ── LAYOUT ─────────────────────────────── */
 .app { display: flex; height: 100vh; overflow: hidden; }
 
-/* ── SIDEBAR ────────────────────────────────────── */
+/* ── SIDEBAR ─────────────────────────────── */
 .sidebar {
   width: 220px; flex-shrink: 0; background: var(--surface);
   border-right: 1px solid var(--border); display: flex; flex-direction: column;
@@ -53,7 +54,8 @@ body {
 }
 .logo-box {
   width: 30px; height: 30px; border-radius: 7px; background: var(--accent);
-  display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  color: #fff; font-size: 16px;
 }
 .logo-name { font-size: 14px; font-weight: 700; letter-spacing: -.3px; }
 .logo-ver  { font-size: 11px; color: var(--text-2); margin-top: 1px; font-family: var(--mono); }
@@ -65,13 +67,13 @@ body {
   letter-spacing: .7px; padding: 6px 8px 3px;
 }
 .nav-item {
-  display: flex; align-items: center; gap: 8px; padding: 6.5px 9px;
+  display: flex; align-items: center; gap: 8px; padding: 6.5px 10px;
   border-radius: 6px; cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 500;
   transition: background .12s, color .12s; user-select: none; margin-bottom: 1px;
 }
+.nav-item i { font-size: 17px; width: 18px; text-align: center; flex-shrink: 0; }
 .nav-item:hover { background: var(--surface-2); color: var(--text); }
 .nav-item.active { background: var(--accent-dim); color: var(--accent-2); }
-.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
 
 .sidebar-foot {
   padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0;
@@ -84,7 +86,7 @@ body {
 .conn-dot.on  { background: var(--green); box-shadow: 0 0 5px rgba(34,197,94,.5); }
 .conn-dot.off { background: var(--red); }
 
-/* ── MAIN ───────────────────────────────────────── */
+/* ── MAIN ────────────────────────────────── */
 .main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
 .page-head {
@@ -98,12 +100,12 @@ body {
 .scroll-area { flex: 1; overflow-y: auto; min-height: 0; padding: 18px 28px 28px; }
 .scroll-area.no-scroll { overflow: hidden; display: flex; flex-direction: column; }
 
-/* ── SECTION ────────────────────────────────────── */
+/* ── SECTIONS ────────────────────────────── */
 .section { display: none; }
 .section.active { display: block; }
 .section.active.fill { display: flex; flex-direction: column; height: 100%; }
 
-/* ── STAT GRID ──────────────────────────────────── */
+/* ── STAT GRID ───────────────────────────── */
 .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
 .stat-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
@@ -112,24 +114,26 @@ body {
 .stat-card:hover { border-color: var(--border-2); }
 .stat-top   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .stat-label { font-size: 11.5px; font-weight: 500; color: var(--text-2); }
-.stat-ico   { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-.stat-ico.purple { background: var(--accent-dim); }
-.stat-ico.green  { background: var(--green-dim); }
-.stat-ico.red    { background: var(--red-dim); }
-.stat-ico.yellow { background: var(--yellow-dim); }
+.stat-ico   { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.stat-ico i { font-size: 16px; }
+.stat-ico.purple { background: var(--accent-dim); color: var(--accent-2); }
+.stat-ico.green  { background: var(--green-dim);  color: var(--green); }
+.stat-ico.red    { background: var(--red-dim);    color: var(--red); }
+.stat-ico.yellow { background: var(--yellow-dim); color: var(--yellow); }
 .stat-val  { font-size: 26px; font-weight: 700; letter-spacing: -1px; font-family: var(--mono); }
 .stat-hint { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
-/* ── CARD ───────────────────────────────────────── */
+/* ── CARD ────────────────────────────────── */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 12px; }
 .card-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px; border-bottom: 1px solid var(--border);
 }
-.card-title { font-size: 13px; font-weight: 600; }
+.card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.card-title i { font-size: 15px; color: var(--text-2); }
 .card-body  { padding: 14px 16px; }
 
-/* ── TABLE ──────────────────────────────────────── */
+/* ── TABLE ───────────────────────────────── */
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 thead th {
@@ -141,12 +145,13 @@ tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: rgba(255,255,255,.016); }
 
-/* ── BUTTONS ────────────────────────────────────── */
+/* ── BUTTONS ─────────────────────────────── */
 .btn {
-  display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px;
+  display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px;
   border: 1px solid transparent; border-radius: 6px; font-size: 12.5px; font-weight: 500;
   cursor: pointer; font-family: var(--font); transition: all .12s; white-space: nowrap; line-height: 1;
 }
+.btn i { font-size: 14px; }
 .btn:active { transform: scale(.97); }
 .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
@@ -160,14 +165,14 @@ tbody tr:hover td { background: rgba(255,255,255,.016); }
 .btn-xs { padding: 3px 7px; font-size: 11px; }
 .btn-grp { display: flex; gap: 6px; }
 
-/* ── BADGE ──────────────────────────────────────── */
+/* ── BADGE ───────────────────────────────── */
 .badge { display: inline-flex; align-items: center; padding: 1.5px 7px; border-radius: 99px; font-size: 11px; font-weight: 500; }
 .badge-green  { background: var(--green-dim);  color: var(--green); }
 .badge-red    { background: var(--red-dim);    color: var(--red); }
 .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
 .badge-purple { background: var(--accent-dim); color: var(--accent-2); }
 
-/* ── FORMS ──────────────────────────────────────── */
+/* ── FORMS ───────────────────────────────── */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-g { margin-bottom: 12px; }
 .form-g:last-child { margin-bottom: 0; }
@@ -180,7 +185,7 @@ tbody tr:hover td { background: rgba(255,255,255,.016); }
 .form-ctrl:focus { outline: none; border-color: var(--accent); }
 textarea.form-ctrl { resize: vertical; min-height: 70px; }
 
-/* ── TOGGLE ─────────────────────────────────────── */
+/* ── TOGGLE ──────────────────────────────── */
 .toggle-row { display: flex; align-items: center; gap: 9px; }
 .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
 .toggle input { display: none; }
@@ -189,7 +194,7 @@ textarea.form-ctrl { resize: vertical; min-height: 70px; }
 input:checked + .tgl-track { background: var(--accent); }
 input:checked ~ .tgl-thumb { transform: translateX(16px); }
 
-/* ── MODAL ──────────────────────────────────────── */
+/* ── MODAL ───────────────────────────────── */
 .overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.72);
   backdrop-filter: blur(3px); display: none;
@@ -205,7 +210,7 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
 .modal-body { padding: 18px 20px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 20px 17px; }
 
-/* ── TOKEN SCREEN ───────────────────────────────── */
+/* ── TOKEN SCREEN ────────────────────────── */
 .tok-overlay {
   position: fixed; inset: 0; background: var(--bg);
   display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -215,11 +220,15 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
   background: var(--surface); border: 1px solid var(--border-2);
   border-radius: 16px; padding: 32px; width: 370px; max-width: 95vw;
 }
-.tok-logo { font-size: 26px; margin-bottom: 4px; }
+.tok-logo {
+  width: 44px; height: 44px; border-radius: 10px; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+}
+.tok-logo i { font-size: 24px; color: #fff; }
 .tok-title { font-size: 21px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 6px; }
 .tok-sub   { font-size: 13px; color: var(--text-2); margin-bottom: 22px; line-height: 1.6; }
 
-/* ── ANNOUNCEMENTS ──────────────────────────────── */
+/* ── ANNOUNCEMENTS ───────────────────────── */
 .ann-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r); padding: 13px 15px;
@@ -233,10 +242,10 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
 .ann-sep  { color: var(--text-3); }
 .ann-acts { display: flex; gap: 5px; flex-shrink: 0; }
 
-/* ── CONSOLE ────────────────────────────────────── */
+/* ── CONSOLE ─────────────────────────────── */
 .console-outer {
   display: flex; flex-direction: column; flex: 1; min-height: 0;
-  background: #08080d; border: 1px solid var(--border);
+  background: #07070c; border: 1px solid var(--border);
   border-radius: var(--r); overflow: hidden;
 }
 .console-bar {
@@ -244,12 +253,15 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
   padding: 8px 14px; border-bottom: 1px solid var(--border);
   background: var(--surface); flex-shrink: 0;
 }
-.console-bar-left  { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); font-weight: 500; }
+.console-bar-left {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-2); font-weight: 500;
+}
+.console-bar-left i { font-size: 15px; }
 .console-bar-right { display: flex; gap: 6px; }
 .console-out {
   flex: 1; overflow-y: auto; padding: 10px 14px;
-  font-family: var(--mono); font-size: 12.5px; line-height: 1.75;
-  min-height: 0;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.75; min-height: 0;
   scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
 }
 .console-out::-webkit-scrollbar { width: 5px; }
@@ -257,10 +269,10 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
 .log-line { display: flex; gap: 8px; }
 .log-t    { color: var(--text-3); flex-shrink: 0; user-select: none; }
 .log-lv   { flex-shrink: 0; width: 50px; font-weight: 500; }
-.log-lv.INFO    { color: #4a4a6a; }
+.log-lv.INFO    { color: #44445a; }
 .log-lv.WARN, .log-lv.WARNING { color: var(--yellow); }
 .log-lv.SEVERE, .log-lv.ERROR { color: var(--red); }
-.log-m    { color: #bbbbd0; white-space: pre-wrap; word-break: break-all; flex: 1; }
+.log-m    { color: #c0c0d8; white-space: pre-wrap; word-break: break-all; flex: 1; }
 .log-m.WARN, .log-m.WARNING { color: #fde68a; }
 .log-m.SEVERE, .log-m.ERROR { color: #fca5a5; }
 .console-input-row {
@@ -276,34 +288,40 @@ input:checked ~ .tgl-thumb { transform: translateX(16px); }
 .console-send {
   padding: 0 14px; height: 40px; background: transparent; border: none;
   border-left: 1px solid var(--border); color: var(--text-2); cursor: pointer;
-  display: flex; align-items: center; font-size: 15px; transition: color .12s;
+  display: flex; align-items: center; transition: color .12s;
 }
 .console-send:hover { color: var(--accent-2); }
+.console-send i { font-size: 17px; }
 
-/* ── TOAST ──────────────────────────────────────── */
+/* ── MOTD PREVIEW ────────────────────────── */
+.motd-preview {
+  background: var(--surface-3); border-radius: 6px; padding: 10px 14px;
+  font-size: 13px; min-height: 24px; border: 1px solid var(--border);
+}
+
+/* ── TOAST ───────────────────────────────── */
 #toast {
   position: fixed; bottom: 18px; right: 18px;
   z-index: 9999; display: flex; flex-direction: column; gap: 6px;
 }
 .toast-item {
   padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-  animation: slideIn .2s ease; max-width: 300px;
+  animation: slideIn .2s ease; max-width: 300px; display: flex; align-items: center; gap: 7px;
 }
+.toast-item i { font-size: 15px; }
 .toast-item.success { background: #0c2418; color: var(--green); border: 1px solid rgba(34,197,94,.22); }
 .toast-item.error   { background: #240c0c; color: var(--red);   border: 1px solid rgba(239,68,68,.22); }
 @keyframes slideIn { from { transform:translateX(16px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 
-/* ── MISC ───────────────────────────────────────── */
+/* ── MISC ────────────────────────────────── */
 .empty { text-align:center; padding: 36px 16px; color: var(--text-2); }
-.empty-ico { font-size: 28px; margin-bottom: 10px; }
-.empty p   { font-size: 13px; color: var(--text-2); }
+.empty i { font-size: 32px; color: var(--text-3); display: block; margin-bottom: 10px; }
+.empty p { font-size: 13px; }
 .mono { font-family: var(--mono); }
 code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); padding: 1px 5px; border-radius: 4px; }
-.sep  { color: var(--text-3); }
 
 /* ping bars */
-.ping { display:inline-flex; align-items:center; gap:5px; }
-.pb   { display:inline-flex; gap:2px; align-items:flex-end; }
+.pb   { display:inline-flex; gap:2px; align-items:flex-end; vertical-align:middle; }
 .pb span { width:3px; border-radius:1px; display:inline-block; }
 .pb span:nth-child(1) { height:5px; }
 .pb span:nth-child(2) { height:9px; }
@@ -313,9 +331,9 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
 .pr  span { background: var(--red); }
 .pd  span { background: var(--border-2); }
 
-/* info row */
+/* info grid */
 .info-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.info-item label { font-size:11px; font-weight:500; color:var(--text-2); display:block; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px; }
+.info-item label { font-size:11px; font-weight:600; color:var(--text-2); display:block; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px; }
 .info-item p { font-size:13px; font-family: var(--mono); }
 </style>
 </head>
@@ -324,23 +342,24 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
 <!-- TOKEN SCREEN -->
 <div class="tok-overlay show" id="tokScreen">
   <div class="tok-card">
-    <div class="tok-logo">⛏</div>
+    <div class="tok-logo"><i class="ti ti-server"></i></div>
     <div class="tok-title">Server Dashboard</div>
     <div class="tok-sub">config.yml에 설정된 <code>web.token</code> 값을 입력하세요.</div>
     <div class="form-g">
       <label class="form-label">API 토큰</label>
       <input class="form-ctrl" type="password" id="tokInput" placeholder="토큰 입력..." autocomplete="off">
     </div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:9px" onclick="setToken()">접속</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:9px" onclick="setToken()">
+      <i class="ti ti-login"></i> 접속
+    </button>
   </div>
 </div>
 
 <!-- APP -->
 <div class="app">
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-box">⛏</div>
+      <div class="logo-box"><i class="ti ti-server"></i></div>
       <div>
         <div class="logo-name">ServerDashboard</div>
         <div class="logo-ver" id="sideVer">—</div>
@@ -350,22 +369,22 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
       <div class="nav-group">
         <div class="nav-group-label">일반</div>
         <div class="nav-item active" onclick="nav('status')" data-nav="status">
-          <span class="nav-icon">📊</span> 서버 상태
+          <i class="ti ti-layout-dashboard"></i> 서버 상태
         </div>
         <div class="nav-item" onclick="nav('players')" data-nav="players">
-          <span class="nav-icon">👥</span> 플레이어
+          <i class="ti ti-users"></i> 플레이어
         </div>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">관리</div>
         <div class="nav-item" onclick="nav('bans')" data-nav="bans">
-          <span class="nav-icon">🚫</span> 밴 목록
+          <i class="ti ti-ban"></i> 밴 목록
         </div>
         <div class="nav-item" onclick="nav('announcements')" data-nav="announcements">
-          <span class="nav-icon">📢</span> 공지 관리
+          <i class="ti ti-speakerphone"></i> 공지 관리
         </div>
         <div class="nav-item" onclick="nav('console')" data-nav="console">
-          <span class="nav-icon">🖥</span> 콘솔
+          <i class="ti ti-terminal-2"></i> 콘솔
         </div>
       </div>
     </nav>
@@ -377,65 +396,85 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
   </aside>
 
-  <!-- Main -->
   <div class="main">
 
-    <!-- ── STATUS ─────────────────────────────────── -->
+    <!-- ── STATUS ─────────────────────── -->
     <div id="ph-status" class="page-head" style="display:none">
       <div>
         <div class="page-title">서버 상태</div>
         <div class="page-sub">실시간 서버 정보</div>
       </div>
       <div class="page-acts">
-        <button class="btn btn-ghost btn-sm" onclick="loadStatus()">↻ 새로고침</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadStatus()"><i class="ti ti-refresh"></i> 새로고침</button>
       </div>
     </div>
     <div class="scroll-area" id="sa-status" style="display:none">
       <section class="section active" id="section-status">
         <div class="stat-grid">
           <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">온라인</span><span class="stat-ico purple">👥</span></div>
+            <div class="stat-top"><span class="stat-label">온라인</span><span class="stat-ico purple"><i class="ti ti-users"></i></span></div>
             <div class="stat-val" id="st-online">—</div>
             <div class="stat-hint">현재 접속 중</div>
           </div>
           <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">최대 인원</span><span class="stat-ico green">🏷</span></div>
+            <div class="stat-top"><span class="stat-label">최대 인원</span><span class="stat-ico green"><i class="ti ti-user-check"></i></span></div>
             <div class="stat-val" id="st-max">—</div>
             <div class="stat-hint">서버 슬롯</div>
           </div>
           <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">TPS</span><span class="stat-ico yellow">⚡</span></div>
+            <div class="stat-top"><span class="stat-label">TPS</span><span class="stat-ico yellow"><i class="ti ti-activity"></i></span></div>
             <div class="stat-val" id="st-tps">—</div>
             <div class="stat-hint">목표: 20.0</div>
           </div>
           <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">활성 공지</span><span class="stat-ico red">📢</span></div>
+            <div class="stat-top"><span class="stat-label">활성 공지</span><span class="stat-ico red"><i class="ti ti-speakerphone"></i></span></div>
             <div class="stat-val" id="st-anns">—</div>
             <div class="stat-hint">예약된 공지</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="card-head"><span class="card-title">서버 정보</span></div>
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-info-circle"></i> 서버 정보</span>
+          </div>
           <div class="card-body">
             <div class="info-row">
               <div class="info-item"><label>버전</label><p id="st-ver">—</p></div>
-              <div class="info-item"><label>MOTD</label><p id="st-motd">—</p></div>
+              <div class="info-item"><label>현재 MOTD</label><p id="st-motd" style="font-family:var(--font)">—</p></div>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-message-circle"></i> MOTD 설정</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="resetMotd()">기본값으로</button>
+              <button class="btn btn-primary btn-sm" onclick="saveMotd()"><i class="ti ti-check"></i> 저장</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="form-g">
+              <label class="form-label">&amp; 색상코드 지원 (예: &amp;a초록 &amp;c빨강 &amp;l굵게)</label>
+              <input class="form-ctrl" type="text" id="motdInput" placeholder="&aWelcome to &bMy Server&f!" oninput="updateMotdPreview()">
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">미리보기</div>
+            <div class="motd-preview" id="motdPreview"><span style="color:var(--text-3)">서버 기본 MOTD 사용</span></div>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- ── PLAYERS ────────────────────────────────── -->
+    <!-- ── PLAYERS ─────────────────────── -->
     <div id="ph-players" class="page-head" style="display:none">
       <div>
         <div class="page-title">플레이어</div>
         <div class="page-sub">현재 온라인 플레이어</div>
       </div>
       <div class="page-acts">
-        <button class="btn btn-ghost btn-sm" onclick="loadPlayers()">↻</button>
-        <button class="btn btn-warn btn-sm" onclick="openKickModal()">강퇴</button>
-        <button class="btn btn-danger btn-sm" onclick="openBanModal()">밴</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadPlayers()"><i class="ti ti-refresh"></i></button>
+        <button class="btn btn-warn btn-sm" onclick="openKickModal()"><i class="ti ti-user-minus"></i> 강퇴</button>
+        <button class="btn btn-danger btn-sm" onclick="openBanModal()"><i class="ti ti-user-x"></i> 밴</button>
       </div>
     </div>
     <div class="scroll-area" id="sa-players" style="display:none">
@@ -444,22 +483,22 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
           <div class="tbl-wrap">
             <table>
               <thead><tr><th>플레이어</th><th>핑</th><th>월드</th><th>UUID</th><th>권한</th><th>작업</th></tr></thead>
-              <tbody id="playerTbl"><tr><td colspan="6"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></td></tr></tbody>
+              <tbody id="playerTbl"><tr><td colspan="6"><div class="empty"><i class="ti ti-loader"></i><p>로딩 중...</p></div></td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- ── BANS ──────────────────────────────────── -->
+    <!-- ── BANS ────────────────────────── -->
     <div id="ph-bans" class="page-head" style="display:none">
       <div>
         <div class="page-title">밴 목록</div>
         <div class="page-sub">차단된 플레이어 관리</div>
       </div>
       <div class="page-acts">
-        <button class="btn btn-ghost btn-sm" onclick="loadBans()">↻</button>
-        <button class="btn btn-danger btn-sm" onclick="openBanModal()">+ 밴 추가</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadBans()"><i class="ti ti-refresh"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="openBanModal()"><i class="ti ti-plus"></i> 밴 추가</button>
       </div>
     </div>
     <div class="scroll-area" id="sa-bans" style="display:none">
@@ -468,21 +507,21 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
           <div class="tbl-wrap">
             <table>
               <thead><tr><th>플레이어</th><th>사유</th><th>처리자</th><th>만료일</th><th>작업</th></tr></thead>
-              <tbody id="banTbl"><tr><td colspan="5"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></td></tr></tbody>
+              <tbody id="banTbl"><tr><td colspan="5"><div class="empty"><i class="ti ti-loader"></i><p>로딩 중...</p></div></td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- ── ANNOUNCEMENTS ─────────────────────────── -->
+    <!-- ── ANNOUNCEMENTS ──────────────── -->
     <div id="ph-announcements" class="page-head" style="display:none">
       <div>
         <div class="page-title">공지 관리</div>
         <div class="page-sub">자동 반복 공지 설정</div>
       </div>
       <div class="page-acts">
-        <button class="btn btn-primary btn-sm" onclick="openAnnModal()">+ 공지 추가</button>
+        <button class="btn btn-primary btn-sm" onclick="openAnnModal()"><i class="ti ti-plus"></i> 공지 추가</button>
       </div>
     </div>
     <div class="scroll-area" id="sa-announcements" style="display:none">
@@ -496,32 +535,32 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
           <code style="color:#AAAAAA">&amp;7회색</code>
           <code><b>&amp;l굵게</b></code>
         </div>
-        <div id="annList"><div class="empty"><div class="empty-ico">⏳</div><p>로딩 중...</p></div></div>
+        <div id="annList"><div class="empty"><i class="ti ti-loader"></i><p>로딩 중...</p></div></div>
       </section>
     </div>
 
-    <!-- ── CONSOLE ────────────────────────────────── -->
+    <!-- ── CONSOLE ─────────────────────── -->
     <div id="ph-console" class="page-head" style="display:none">
       <div>
         <div class="page-title">콘솔</div>
         <div class="page-sub">서버 로그 및 명령어 실행</div>
       </div>
       <div class="page-acts">
-        <button class="btn btn-ghost btn-sm" id="autoScrollBtn" onclick="toggleAutoScroll()">↓ 자동스크롤 ON</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearConsole()">지우기</button>
+        <button class="btn btn-ghost btn-sm" id="autoScrollBtn" onclick="toggleAutoScroll()"><i class="ti ti-arrow-bar-to-down"></i> 자동스크롤 ON</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearConsole()"><i class="ti ti-eraser"></i> 지우기</button>
       </div>
     </div>
     <div class="scroll-area no-scroll" id="sa-console" style="display:none">
       <section class="section active fill" id="section-console">
         <div class="console-outer">
           <div class="console-bar">
-            <div class="console-bar-left">🖥 서버 콘솔 <span class="sep">·</span> <span id="logCount" style="font-family:var(--mono)">0</span> 줄</div>
+            <div class="console-bar-left"><i class="ti ti-terminal-2"></i> 서버 콘솔 &nbsp;<span style="color:var(--text-3)">·</span>&nbsp; <span id="logCount" class="mono">0</span> 줄</div>
           </div>
           <div class="console-out" id="consoleOut"></div>
           <div class="console-input-row">
             <span class="console-prompt">&gt;</span>
-            <input class="console-in" id="consoleIn" placeholder="명령어 입력... (Enter로 실행)" autocomplete="off" spellcheck="false">
-            <button class="console-send" onclick="sendCmd()" title="실행">↵</button>
+            <input class="console-in" id="consoleIn" placeholder="명령어 입력... (Enter 실행, ↑↓ 히스토리)" autocomplete="off" spellcheck="false">
+            <button class="console-send" onclick="sendCmd()" title="실행"><i class="ti ti-send"></i></button>
           </div>
         </div>
       </section>
@@ -542,7 +581,7 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('kickModal')">취소</button>
-      <button class="btn btn-warn" onclick="doKick()">강퇴</button>
+      <button class="btn btn-warn" onclick="doKick()"><i class="ti ti-user-minus"></i> 강퇴</button>
     </div>
   </div>
 </div>
@@ -560,7 +599,7 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('banModal')">취소</button>
-      <button class="btn btn-danger" onclick="doBan()">밴</button>
+      <button class="btn btn-danger" onclick="doBan()"><i class="ti ti-ban"></i> 밴</button>
     </div>
   </div>
 </div>
@@ -571,7 +610,7 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <div class="modal-head"><div class="modal-title" id="annModalTitle">공지 추가</div></div>
     <div class="modal-body">
       <input type="hidden" id="annId">
-      <div class="form-g"><label class="form-label">공지 메시지 (&amp; 색상 코드 사용 가능)</label><textarea class="form-ctrl" id="annMsg" placeholder="&a[공지] &f안녕하세요!"></textarea></div>
+      <div class="form-g"><label class="form-label">공지 메시지 (&amp; 색상코드 지원)</label><textarea class="form-ctrl" id="annMsg" placeholder="&a[공지] &f안녕하세요!"></textarea></div>
       <div class="form-grid">
         <div class="form-g"><label class="form-label">주기 (초)</label><input class="form-ctrl" type="number" id="annInterval" value="300" min="10"></div>
         <div class="form-g"><label class="form-label">권한 필터 (선택)</label><input class="form-ctrl" type="text" id="annPerm" placeholder="예: vip.notify"></div>
@@ -585,7 +624,7 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('annModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveAnn()">저장</button>
+      <button class="btn btn-primary" onclick="saveAnn()"><i class="ti ti-check"></i> 저장</button>
     </div>
   </div>
 </div>
@@ -593,32 +632,29 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
 <script>
 'use strict';
 
-/* ── STATE ───────────────────────────────────────── */
+/* ── STATE ─────────────────────────────── */
 let token = localStorage.getItem('sd_token') || '';
 let curNav = 'status';
 let refreshTimer = null;
-
-// console
 let logOffset = 0;
 let logPollTimer = null;
 let autoScroll = true;
 const cmdHistory = [];
 let histIdx = -1;
 
-/* ── TOKEN ───────────────────────────────────────── */
+/* ── TOKEN ─────────────────────────────── */
 function checkToken() {
-  if (!token) show('tokScreen');
-  else { hide('tokScreen'); init(); }
+  if (!token) show('tokScreen'); else { hide('tokScreen'); init(); }
 }
 function setToken() {
-  const v = document.getElementById('tokInput').value.trim();
+  const v = $('tokInput').value.trim();
   if (!v) return;
   token = v; localStorage.setItem('sd_token', token);
   hide('tokScreen'); init();
 }
-document.getElementById('tokInput').addEventListener('keydown', e => { if (e.key === 'Enter') setToken(); });
+$('tokInput').addEventListener('keydown', e => { if (e.key === 'Enter') setToken(); });
 
-/* ── API ─────────────────────────────────────────── */
+/* ── API ───────────────────────────────── */
 async function api(method, path, body) {
   try {
     const res = await fetch('/api' + path, {
@@ -627,67 +663,49 @@ async function api(method, path, body) {
       body: body ? JSON.stringify(body) : undefined
     });
     const data = await res.json();
-    if (res.status === 401) {
-      token = ''; localStorage.removeItem('sd_token');
-      show('tokScreen'); throw new Error('인증 실패');
-    }
+    if (res.status === 401) { token = ''; localStorage.removeItem('sd_token'); show('tokScreen'); throw new Error('인증 실패'); }
     return { ok: res.ok, status: res.status, data };
-  } catch (e) {
-    return { ok: false, error: e.message };
-  }
+  } catch (e) { return { ok: false, error: e.message }; }
 }
 
-/* ── INIT ────────────────────────────────────────── */
+/* ── INIT ──────────────────────────────── */
 function init() {
   loadStatus(); loadPlayers(); loadBans(); loadAnnouncements();
   setConn(true);
   clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
-    if (curNav === 'status')   loadStatus();
-    if (curNav === 'players')  loadPlayers();
+    if (curNav === 'status')  loadStatus();
+    if (curNav === 'players') loadPlayers();
   }, 15000);
 }
 
-/* ── NAVIGATION ──────────────────────────────────── */
+/* ── NAVIGATION ────────────────────────── */
 const SECTIONS = ['status','players','bans','announcements','console'];
 function nav(section) {
   SECTIONS.forEach(s => {
-    const ph = document.getElementById('ph-' + s);
-    const sa = document.getElementById('sa-' + s);
-    const ni = document.querySelector(`[data-nav="${s}"]`);
+    const ph = $('ph-' + s), sa = $('sa-' + s), ni = document.querySelector(`[data-nav="${s}"]`);
     if (ph) ph.style.display = 'none';
     if (sa) sa.style.display = 'none';
     if (ni) ni.classList.remove('active');
   });
-  const ph = document.getElementById('ph-' + section);
-  const sa = document.getElementById('sa-' + section);
-  const ni = document.querySelector(`[data-nav="${section}"]`);
+  const ph = $('ph-' + section), sa = $('sa-' + section), ni = document.querySelector(`[data-nav="${section}"]`);
   if (ph) ph.style.display = 'flex';
   if (sa) sa.style.display = section === 'console' ? 'flex' : 'block';
   if (ni) ni.classList.add('active');
   curNav = section;
-
   if (section === 'players')       loadPlayers();
   if (section === 'bans')          loadBans();
   if (section === 'announcements') loadAnnouncements();
   if (section === 'status')        loadStatus();
   if (section === 'console')       startLogPoll();
-  else stopLogPoll();
+  else                             stopLogPoll();
 }
-
-/* Initialize first visible section */
-(function initNav() {
-  SECTIONS.forEach(s => {
-    const ph = document.getElementById('ph-' + s);
-    const sa = document.getElementById('sa-' + s);
-    if (ph) ph.style.display = 'none';
-    if (sa) sa.style.display = 'none';
-  });
-  document.getElementById('ph-status').style.display = 'flex';
-  document.getElementById('sa-status').style.display = 'block';
+(function() {
+  SECTIONS.forEach(s => { const ph=$('ph-'+s),sa=$('sa-'+s); if(ph)ph.style.display='none'; if(sa)sa.style.display='none'; });
+  $('ph-status').style.display='flex'; $('sa-status').style.display='block';
 })();
 
-/* ── STATUS ──────────────────────────────────────── */
+/* ── STATUS ────────────────────────────── */
 async function loadStatus() {
   const r = await api('GET', '/status');
   if (!r.ok) { setConn(false); return; }
@@ -696,17 +714,40 @@ async function loadStatus() {
   $('st-online').textContent = d.online;
   $('st-max').textContent    = d.max;
   $('st-ver').textContent    = d.version;
-  $('st-motd').textContent   = d.motd;
+  $('st-motd').innerHTML     = renderMc(d.motd || '');
   $('sideVer').textContent   = (d.version || '').split(' ')[0] || '—';
   const tps = parseFloat(d.tps);
   const tpsEl = $('st-tps');
-  tpsEl.textContent = d.tps;
-  tpsEl.style.color = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
+  tpsEl.textContent  = d.tps;
+  tpsEl.style.color  = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
+  if (d.motdCustom && $('motdInput').value === '') {
+    $('motdInput').value = d.motd;
+    updateMotdPreview();
+  }
   const r2 = await api('GET', '/announcements');
   if (r2.ok) $('st-anns').textContent = r2.data.filter(a => a.enabled).length;
 }
 
-/* ── PLAYERS ─────────────────────────────────────── */
+/* ── MOTD ──────────────────────────────── */
+function updateMotdPreview() {
+  const val = $('motdInput').value;
+  $('motdPreview').innerHTML = val.trim()
+    ? renderMc(val)
+    : '<span style="color:var(--text-3)">서버 기본 MOTD 사용</span>';
+}
+async function saveMotd() {
+  const motd = $('motdInput').value.trim();
+  const r = await api('POST', '/motd', { motd });
+  if (r.ok) { toast('MOTD 변경 완료', 'success'); loadStatus(); }
+  else toast(r.data?.error || '변경 실패', 'error');
+}
+async function resetMotd() {
+  $('motdInput').value = ''; updateMotdPreview();
+  const r = await api('POST', '/motd', { motd: '' });
+  if (r.ok) toast('기본 MOTD로 초기화', 'success');
+}
+
+/* ── PLAYERS ───────────────────────────── */
 async function loadPlayers() {
   const r = await api('GET', '/players');
   const tb = $('playerTbl');
@@ -718,26 +759,19 @@ async function loadPlayers() {
     const opBadge = p.op ? '<span class="badge badge-yellow" style="margin-right:4px">OP</span>' : '';
     return `<tr>
       <td><strong>${esc(p.name)}</strong></td>
-      <td>
-        <div class="ping">
-          <div class="pb ${cls}"><span></span><span></span><span></span></div>
-          <span style="font-family:var(--mono);font-size:12px">${ping}ms</span>
-        </div>
-      </td>
+      <td><span class="pb ${cls}"><span></span><span></span><span></span></span>&nbsp;<span class="mono" style="font-size:12px">${ping}ms</span></td>
       <td>${esc(p.world)}</td>
       <td><span class="mono" style="font-size:11.5px;color:var(--text-2)">${p.uuid.substring(0,8)}…</span></td>
       <td>${opBadge}</td>
-      <td>
-        <div class="btn-grp">
-          <button class="btn btn-warn btn-xs" onclick="kickPre('${esc(p.name)}')">강퇴</button>
-          <button class="btn btn-danger btn-xs" onclick="banPre('${esc(p.name)}')">밴</button>
-        </div>
-      </td>
+      <td><div class="btn-grp">
+        <button class="btn btn-warn btn-xs" onclick="kickPre('${esc(p.name)}')"><i class="ti ti-user-minus"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="banPre('${esc(p.name)}')"><i class="ti ti-user-x"></i></button>
+      </div></td>
     </tr>`;
   }).join('');
 }
 
-/* ── BANS ────────────────────────────────────────── */
+/* ── BANS ──────────────────────────────── */
 async function loadBans() {
   const r = await api('GET', '/banned');
   const tb = $('banTbl');
@@ -748,17 +782,17 @@ async function loadBans() {
     <td>${esc(b.reason || '—')}</td>
     <td>${esc(b.source || '—')}</td>
     <td>${b.expires === '영구' ? '<span class="badge badge-red">영구</span>' : esc(b.expires)}</td>
-    <td><button class="btn btn-ghost btn-xs" onclick="doUnban('${esc(b.player)}')">해제</button></td>
+    <td><button class="btn btn-ghost btn-xs" onclick="doUnban('${esc(b.player)}')"><i class="ti ti-lock-open"></i> 해제</button></td>
   </tr>`).join('');
 }
 
-/* ── ANNOUNCEMENTS ───────────────────────────────── */
+/* ── ANNOUNCEMENTS ─────────────────────── */
 async function loadAnnouncements() {
   const r = await api('GET', '/announcements');
   const el = $('annList');
-  if (!r.ok) { el.innerHTML = `<div class="empty"><p style="color:var(--red)">로드 실패</p></div>`; return; }
+  if (!r.ok) { el.innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:var(--red)">로드 실패</p></div>`; return; }
   if (!r.data.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-ico">📢</div><p>공지가 없습니다. 위 버튼으로 추가하세요.</p></div>`;
+    el.innerHTML = `<div class="empty"><i class="ti ti-speakerphone"></i><p>공지가 없습니다. 위 버튼으로 추가하세요.</p></div>`;
     return;
   }
   el.innerHTML = r.data.map(a => {
@@ -767,39 +801,33 @@ async function loadAnnouncements() {
     return `<div class="ann-card">
       <div class="ann-body">
         <div class="ann-msg">${renderMc(a.message)}</div>
-        <div class="ann-meta">${sb}<span class="ann-sep">·</span><span>⏱ ${fmtInterval(a.interval)}마다</span><span class="ann-sep">·</span>${perm}</div>
+        <div class="ann-meta">${sb}<span class="ann-sep">·</span><span><i class="ti ti-clock" style="font-size:12px"></i> ${fmtInterval(a.interval)}마다</span><span class="ann-sep">·</span>${perm}</div>
       </div>
       <div class="ann-acts">
-        <button class="btn btn-ghost btn-xs" onclick="toggleAnn('${a.id}')">${a.enabled ? '⏸' : '▶'}</button>
-        <button class="btn btn-ghost btn-xs" onclick='editAnn(${JSON.stringify(a).replace(/"/g,"&quot;")})'>✏</button>
-        <button class="btn btn-danger btn-xs" onclick="delAnn('${a.id}')">🗑</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleAnn('${a.id}')" title="${a.enabled?'일시정지':'시작'}">
+          <i class="ti ${a.enabled?'ti-player-pause':'ti-player-play'}"></i>
+        </button>
+        <button class="btn btn-ghost btn-xs" onclick='editAnn(${JSON.stringify(a).replace(/"/g,"&quot;")})' title="편집"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="delAnn('${a.id}')" title="삭제"><i class="ti ti-trash"></i></button>
       </div>
     </div>`;
   }).join('');
 }
 
-/* ── CONSOLE ─────────────────────────────────────── */
-function startLogPoll() {
-  stopLogPoll();
-  pollLogs();
-  logPollTimer = setInterval(pollLogs, 1000);
-}
-function stopLogPoll() {
-  clearInterval(logPollTimer);
-  logPollTimer = null;
-}
+/* ── CONSOLE ───────────────────────────── */
+function startLogPoll() { stopLogPoll(); pollLogs(); logPollTimer = setInterval(pollLogs, 1000); }
+function stopLogPoll()  { clearInterval(logPollTimer); logPollTimer = null; }
 
 async function pollLogs() {
   const r = await api('GET', `/logs?since=${logOffset}`);
   if (!r.ok) return;
-  const { total, lines } = r.data;
-  logOffset = total;
-  appendLogs(lines);
-  $('logCount').textContent = total;
+  logOffset = r.data.total;
+  appendLogs(r.data.lines);
+  $('logCount').textContent = r.data.total;
 }
 
 function appendLogs(lines) {
-  if (!lines || !lines.length) return;
+  if (!lines?.length) return;
   const out = $('consoleOut');
   const atBottom = out.scrollHeight - out.scrollTop - out.clientHeight < 40;
   const frag = document.createDocumentFragment();
@@ -808,13 +836,10 @@ function appendLogs(lines) {
     const time = parts[0] || '';
     const level = parts[1] || 'INFO';
     const msg = parts.slice(2).join('\t');
+    const lv = level === 'WARNING' ? 'WARN' : level;
     const div = document.createElement('div');
     div.className = 'log-line';
-    const lv = level === 'WARNING' ? 'WARN' : level;
-    div.innerHTML =
-      `<span class="log-t">${esc(time)}</span>` +
-      `<span class="log-lv ${level}">${lv.substring(0,4)}</span>` +
-      `<span class="log-m ${level}">${esc(msg)}</span>`;
+    div.innerHTML = `<span class="log-t">${esc(time)}</span><span class="log-lv ${level}">${lv.substring(0,4)}</span><span class="log-m ${level}">${esc(msg)}</span>`;
     frag.appendChild(div);
   }
   out.appendChild(frag);
@@ -822,27 +847,22 @@ function appendLogs(lines) {
   if (autoScroll && atBottom) out.scrollTop = out.scrollHeight;
 }
 
-function clearConsole() {
-  $('consoleOut').innerHTML = '';
-  logOffset = 0;
-}
-
+function clearConsole()    { $('consoleOut').innerHTML = ''; logOffset = 0; }
 function toggleAutoScroll() {
   autoScroll = !autoScroll;
-  $('autoScrollBtn').textContent = `↓ 자동스크롤 ${autoScroll ? 'ON' : 'OFF'}`;
+  $('autoScrollBtn').innerHTML = `<i class="ti ti-arrow-bar-to-down"></i> 자동스크롤 ${autoScroll ? 'ON' : 'OFF'}`;
 }
 
 async function sendCmd() {
   const inp = $('consoleIn');
   const cmd = inp.value.trim();
   if (!cmd) return;
-  cmdHistory.push(cmd); histIdx = -1;
-  inp.value = '';
+  cmdHistory.push(cmd); histIdx = -1; inp.value = '';
   const r = await api('POST', '/console', { command: cmd });
   if (!r.ok) toast('실행 실패: ' + (r.data?.error || r.error || ''), 'error');
 }
 
-document.getElementById('consoleIn').addEventListener('keydown', e => {
+$('consoleIn').addEventListener('keydown', e => {
   const inp = $('consoleIn');
   if (e.key === 'Enter') { sendCmd(); return; }
   if (e.key === 'ArrowUp') {
@@ -856,150 +876,131 @@ document.getElementById('consoleIn').addEventListener('keydown', e => {
   }
 });
 
-/* ── ACTIONS ─────────────────────────────────────── */
-function kickPre(name) { $('kickName').value = name; $('kickReason').value = ''; openModal('kickModal'); }
-function banPre(name)  { $('banName').value  = name; $('banReason').value  = ''; $('banExpiry').value = ''; openModal('banModal'); }
+/* ── ACTIONS ───────────────────────────── */
+function kickPre(n) { $('kickName').value=n; $('kickReason').value=''; openModal('kickModal'); }
+function banPre(n)  { $('banName').value=n;  $('banReason').value=''; $('banExpiry').value=''; openModal('banModal'); }
 function openKickModal() { $('kickName').value=''; $('kickReason').value=''; openModal('kickModal'); }
-function openBanModal()  { $('banName').value=''; $('banReason').value=''; $('banExpiry').value=''; openModal('banModal'); }
+function openBanModal()  { $('banName').value='';  $('banReason').value=''; $('banExpiry').value=''; openModal('banModal'); }
 
 async function doKick() {
-  const player = $('kickName').value.trim();
-  const reason = $('kickReason').value.trim();
-  if (!player) return;
-  const r = await api('POST', '/kick', { player, reason });
-  if (r.ok) { toast(r.data.message, 'success'); closeModal('kickModal'); loadPlayers(); }
-  else toast(r.data?.error || '강퇴 실패', 'error');
+  const player=$('kickName').value.trim(), reason=$('kickReason').value.trim();
+  if(!player) return;
+  const r=await api('POST','/kick',{player,reason});
+  if(r.ok){toast(r.data.message,'success');closeModal('kickModal');loadPlayers();}
+  else toast(r.data?.error||'강퇴 실패','error');
 }
 
 async function doBan() {
-  const player = $('banName').value.trim();
-  const reason = $('banReason').value.trim();
-  const expiry = $('banExpiry').value || null;
-  if (!player) return;
-  const r = await api('POST', '/ban', { player, reason, expiry });
-  if (r.ok) { toast(r.data.message, 'success'); closeModal('banModal'); loadBans(); loadPlayers(); }
-  else toast(r.data?.error || '밴 실패', 'error');
+  const player=$('banName').value.trim(), reason=$('banReason').value.trim(), expiry=$('banExpiry').value||null;
+  if(!player) return;
+  const r=await api('POST','/ban',{player,reason,expiry});
+  if(r.ok){toast(r.data.message,'success');closeModal('banModal');loadBans();loadPlayers();}
+  else toast(r.data?.error||'밴 실패','error');
 }
 
 async function doUnban(name) {
-  if (!confirm(`${name} 의 밴을 해제하시겠습니까?`)) return;
-  const r = await api('POST', '/unban', { player: name });
-  if (r.ok) { toast(r.data.message, 'success'); loadBans(); }
-  else toast(r.data?.error || '해제 실패', 'error');
+  if(!confirm(`${name} 의 밴을 해제하시겠습니까?`)) return;
+  const r=await api('POST','/unban',{player:name});
+  if(r.ok){toast(r.data.message,'success');loadBans();}
+  else toast(r.data?.error||'해제 실패','error');
 }
 
 function openAnnModal() {
-  $('annModalTitle').textContent = '공지 추가';
-  $('annId').value = ''; $('annMsg').value = ''; $('annInterval').value = '300';
-  $('annPerm').value = ''; $('annEnabled').checked = true;
+  $('annModalTitle').textContent='공지 추가'; $('annId').value=''; $('annMsg').value='';
+  $('annInterval').value='300'; $('annPerm').value=''; $('annEnabled').checked=true;
   openModal('annModal');
 }
-
 function editAnn(a) {
-  $('annModalTitle').textContent = '공지 편집';
-  $('annId').value = a.id; $('annMsg').value = a.message; $('annInterval').value = a.interval;
-  $('annPerm').value = a.permission || ''; $('annEnabled').checked = a.enabled;
+  $('annModalTitle').textContent='공지 편집'; $('annId').value=a.id; $('annMsg').value=a.message;
+  $('annInterval').value=a.interval; $('annPerm').value=a.permission||''; $('annEnabled').checked=a.enabled;
   openModal('annModal');
 }
-
 async function saveAnn() {
-  const id       = $('annId').value;
-  const message  = $('annMsg').value.trim();
-  const interval = parseInt($('annInterval').value) || 300;
-  const permission = $('annPerm').value.trim() || null;
-  const enabled  = $('annEnabled').checked;
-  if (!message) { toast('메시지를 입력하세요.', 'error'); return; }
-  const r = id
-    ? await api('PUT',  `/announcements/${id}`, { message, interval, permission, enabled })
-    : await api('POST', '/announcements',        { message, interval, permission, enabled });
-  if (r.ok) { toast(id ? '수정 완료' : '추가 완료', 'success'); closeModal('annModal'); loadAnnouncements(); }
-  else toast(r.data?.error || '저장 실패', 'error');
+  const id=$('annId').value, message=$('annMsg').value.trim();
+  const interval=parseInt($('annInterval').value)||300;
+  const permission=$('annPerm').value.trim()||null, enabled=$('annEnabled').checked;
+  if(!message){toast('메시지를 입력하세요.','error');return;}
+  const r=id ? await api('PUT',`/announcements/${id}`,{message,interval,permission,enabled})
+             : await api('POST','/announcements',{message,interval,permission,enabled});
+  if(r.ok){toast(id?'수정 완료':'추가 완료','success');closeModal('annModal');loadAnnouncements();}
+  else toast(r.data?.error||'저장 실패','error');
 }
-
 async function toggleAnn(id) {
-  const r = await api('POST', `/announcements/${id}/toggle`);
-  if (r.ok) { toast(r.data.message, 'success'); loadAnnouncements(); }
-  else toast(r.data?.error || '오류', 'error');
+  const r=await api('POST',`/announcements/${id}/toggle`);
+  if(r.ok){toast(r.data.message,'success');loadAnnouncements();}
+  else toast(r.data?.error||'오류','error');
 }
-
 async function delAnn(id) {
-  if (!confirm('이 공지를 삭제하시겠습니까?')) return;
-  const r = await api('DELETE', `/announcements/${id}`);
-  if (r.ok) { toast('삭제 완료', 'success'); loadAnnouncements(); }
-  else toast(r.data?.error || '삭제 실패', 'error');
+  if(!confirm('이 공지를 삭제하시겠습니까?')) return;
+  const r=await api('DELETE',`/announcements/${id}`);
+  if(r.ok){toast('삭제 완료','success');loadAnnouncements();}
+  else toast(r.data?.error||'삭제 실패','error');
 }
 
-/* ── MODAL ───────────────────────────────────────── */
+/* ── MODAL ─────────────────────────────── */
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); });
 });
 
-/* ── TOAST ───────────────────────────────────────── */
-function toast(msg, type = 'success') {
-  const c = document.getElementById('toast');
-  const el = document.createElement('div');
-  el.className = `toast-item ${type}`;
-  el.textContent = msg;
+/* ── TOAST ─────────────────────────────── */
+function toast(msg, type='success') {
+  const c=document.getElementById('toast');
+  const el=document.createElement('div');
+  el.className=`toast-item ${type}`;
+  const ico = type==='success' ? 'ti-circle-check' : 'ti-alert-circle';
+  el.innerHTML=`<i class="ti ${ico}"></i>${esc(msg)}`;
   c.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(()=>el.remove(), 3200);
 }
 
-/* ── UTILS ───────────────────────────────────────── */
+/* ── UTILS ─────────────────────────────── */
 const $ = id => document.getElementById(id);
 const show = id => document.getElementById(id).classList.add('show');
 const hide = id => document.getElementById(id).classList.remove('show');
 
 function setConn(ok) {
-  const dot = $('connDot');
-  dot.className = 'conn-dot ' + (ok ? 'on' : 'off');
-  $('connTxt').textContent = ok ? '연결됨' : '연결 끊김';
+  $('connDot').className='conn-dot '+(ok?'on':'off');
+  $('connTxt').textContent=ok?'연결됨':'연결 끊김';
 }
-
 function esc(s) {
-  if (!s) return '';
+  if(!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function emptyRow(cols, msg, isErr) {
-  const c = isErr ? 'color:var(--red)' : '';
-  return `<tr><td colspan="${cols}"><div class="empty" style="${c}"><p>${esc(msg)}</p></div></td></tr>`;
+  const c=isErr?'color:var(--red)':'';
+  const ico=isErr?'ti-alert-circle':'ti-mood-empty';
+  return `<tr><td colspan="${cols}"><div class="empty" style="${c}"><i class="ti ${ico}"></i><p>${esc(msg)}</p></div></td></tr>`;
 }
-
 function fmtInterval(s) {
-  if (s < 60) return `${s}초`;
-  if (s < 3600) return `${Math.round(s/60)}분`;
+  if(s<60) return `${s}초`;
+  if(s<3600) return `${Math.round(s/60)}분`;
   return `${Math.round(s/3600)}시간`;
 }
-
 function linkify(text) {
-  return text.split(/(https?:\/\/[^\s]+)/g).map((seg, i) => {
-    if (i % 2 === 1) {
-      const e = esc(seg);
-      return `<a href="${e}" target="_blank" rel="noopener" style="color:var(--accent-2);text-decoration:underline">${e}</a>`;
-    }
+  return text.split(/(https?:\/\/[^\s]+)/g).map((seg,i)=>{
+    if(i%2===1){const e=esc(seg);return `<a href="${e}" target="_blank" rel="noopener" style="color:var(--accent-2);text-decoration:underline">${e}</a>`;}
     return esc(seg);
   }).join('');
 }
-
 function renderMc(text) {
-  const clr = {'0':'#000','1':'#00A','2':'#0A0','3':'#0AA','4':'#A00','5':'#A0A',
-    '6':'#FA0','7':'#AAA','8':'#555','9':'#55F','a':'#5F5','b':'#5FF','c':'#F55','d':'#F5F','e':'#FF5','f':'#FFF'};
-  let out = '<span>', bold=false, italic=false;
-  text.split(/&([0-9a-fklmnorA-FKLMNOR])/g).forEach((p, i) => {
-    if (i % 2 === 0) { out += linkify(p); return; }
-    const c = p.toLowerCase();
-    if (c==='l') { bold=true; out+='<b>'; }
-    else if (c==='o') { italic=true; out+='<i>'; }
-    else if (c==='r') { if(bold)out+='</b>'; if(italic)out+='</i>'; bold=italic=false; out+='</span><span>'; }
-    else if (clr[c]) { out+=`</span><span style="color:${clr[c]}">`; }
+  const clr={'0':'#000','1':'#00A','2':'#0A0','3':'#0AA','4':'#A00','5':'#A0A','6':'#FA0',
+    '7':'#AAA','8':'#555','9':'#55F','a':'#5F5','b':'#5FF','c':'#F55','d':'#F5F','e':'#FF5','f':'#FFF'};
+  let out='<span>',bold=false,italic=false;
+  text.split(/&([0-9a-fklmnorA-FKLMNOR])/g).forEach((p,i)=>{
+    if(i%2===0){out+=linkify(p);return;}
+    const c=p.toLowerCase();
+    if(c==='l'){bold=true;out+='<b>';}
+    else if(c==='o'){italic=true;out+='<i>';}
+    else if(c==='r'){if(bold)out+='</b>';if(italic)out+='</i>';bold=italic=false;out+='</span><span>';}
+    else if(clr[c]){out+=`</span><span style="color:${clr[c]}">`;}
   });
-  out += '</span>';
+  out+='</span>';
   return out;
 }
 
-/* ── BOOT ────────────────────────────────────────── */
+/* ── BOOT ──────────────────────────────── */
 checkToken();
 </script>
 </body>

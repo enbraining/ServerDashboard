@@ -37,8 +37,18 @@ public class WebServer {
 
         if (plugin.getConfig().getBoolean("web.https.enabled", false)) {
             int httpsPort = plugin.getConfig().getInt("web.https.port", 8443);
-            String certPath = plugin.getConfig().getString("web.https.cert", "");
-            String keyPath  = plugin.getConfig().getString("web.https.key",  "");
+            String certPath, keyPath;
+            if (plugin.getConfig().getBoolean("web.https.acme.enabled", false)) {
+                certPath = new java.io.File(plugin.getDataFolder(), "fullchain.pem").getAbsolutePath();
+                keyPath  = new java.io.File(plugin.getDataFolder(), "privkey.pem").getAbsolutePath();
+                if (!new java.io.File(certPath).exists()) {
+                    plugin.getLogger().info("HTTPS: ACME 인증서 없음 — '/dashboard cert-issue' 로 발급하세요.");
+                    return;
+                }
+            } else {
+                certPath = plugin.getConfig().getString("web.https.cert", "");
+                keyPath  = plugin.getConfig().getString("web.https.key",  "");
+            }
             try {
                 startHttps(httpsPort, certPath, keyPath);
                 plugin.getLogger().info("HTTPS 서버 시작: " + httpsPort + "번 포트");

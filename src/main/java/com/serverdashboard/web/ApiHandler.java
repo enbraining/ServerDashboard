@@ -90,6 +90,10 @@ public class ApiHandler implements HttpHandler {
         else if (path.equals("/status") && method.equals("GET")) {
             handleGetStatus(ex);
         }
+        // --- MOTD ---
+        else if (path.equals("/motd") && method.equals("POST")) {
+            handleSetMotd(ex);
+        }
         // --- 콘솔 ---
         else if (path.equals("/logs") && method.equals("GET")) {
             handleGetLogs(ex);
@@ -250,12 +254,23 @@ public class ApiHandler implements HttpHandler {
             JsonObject o = new JsonObject();
             o.addProperty("online", Bukkit.getOnlinePlayers().size());
             o.addProperty("max", Bukkit.getMaxPlayers());
-            o.addProperty("motd", Bukkit.getMotd());
+            String customMotd = plugin.getConfig().getString("web.motd", "");
+            o.addProperty("motd", customMotd.isBlank() ? Bukkit.getMotd() : customMotd);
+            o.addProperty("motdCustom", !customMotd.isBlank());
             o.addProperty("version", Bukkit.getVersion());
             o.addProperty("tps", String.format("%.2f", Bukkit.getTPS()[0]));
             return o;
         });
         send(ex, 200, status);
+    }
+
+    private void handleSetMotd(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        String motd = getStr(body, "motd");
+        if (motd == null) { send(ex, 400, obj("error", "motd 필드가 필요합니다.")); return; }
+        plugin.getConfig().set("web.motd", motd);
+        plugin.saveConfig();
+        send(ex, 200, obj("message", "MOTD 변경 완료"));
     }
 
     private void handleGetLogs(HttpExchange ex) throws IOException {

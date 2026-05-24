@@ -1,6 +1,8 @@
 web:
   # HTTP 포트 (내부/API 접근용)
   port: 8080
+  # MOTD (비워두면 server.properties 값 사용, &a 색상코드 지원)
+  motd: ""
 
   # HTTPS 설정
   https:
