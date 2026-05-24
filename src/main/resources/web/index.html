@@ -632,6 +632,11 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
 <script>
 'use strict';
 
+/* ── UTILS ─────────────────────────────── */
+const $ = id => document.getElementById(id);
+const show = id => document.getElementById(id).classList.add('show');
+const hide = id => document.getElementById(id).classList.remove('show');
+
 /* ── STATE ─────────────────────────────── */
 let token = localStorage.getItem('sd_token') || '';
 let curNav = 'status';
@@ -954,11 +959,6 @@ function toast(msg, type='success') {
   c.appendChild(el);
   setTimeout(()=>el.remove(), 3200);
 }
-
-/* ── UTILS ─────────────────────────────── */
-const $ = id => document.getElementById(id);
-const show = id => document.getElementById(id).classList.add('show');
-const hide = id => document.getElementById(id).classList.remove('show');
 
 function setConn(ok) {
   $('connDot').className='conn-dot '+(ok?'on':'off');
