@@ -10,7 +10,6 @@ import com.sun.net.httpserver.HttpHandler;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.BanList;
-import org.bukkit.GameRule;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -413,16 +412,18 @@ public class ApiHandler implements HttpHandler {
         send(ex, 200, obj("message", "Whitelist " + (enabled ? "enabled" : "disabled") + "."));
     }
 
+    @SuppressWarnings("deprecation")
     private void handleGetGamerules(HttpExchange ex) throws Exception {
         JsonArray result = runOnMain(() -> {
             JsonArray arr = new JsonArray();
             World world = Bukkit.getWorlds().get(0);
-            for (GameRule<?> rule : GameRule.values()) {
+            for (String name : world.getGameRules()) {
+                String value = world.getGameRuleValue(name);
+                if (value == null) value = "";
                 JsonObject o = new JsonObject();
-                o.addProperty("name", rule.getName());
-                o.addProperty("type", rule.getType() == Boolean.class ? "boolean" : "integer");
-                Object val = world.getGameRuleValue(rule);
-                o.addProperty("value", val != null ? val.toString() : "");
+                o.addProperty("name", name);
+                o.addProperty("type", value.equals("true") || value.equals("false") ? "boolean" : "integer");
+                o.addProperty("value", value);
                 arr.add(o);
             }
             return arr;
@@ -430,26 +431,16 @@ public class ApiHandler implements HttpHandler {
         send(ex, 200, result);
     }
 
-    @SuppressWarnings("unchecked")
     private void handleSetGamerule(HttpExchange ex) throws Exception {
         JsonObject body = readBody(ex);
         String ruleName = getStr(body, "rule");
         String value    = getStr(body, "value");
         if (ruleName == null || value == null) { send(ex, 400, obj("error", "rule and value are required")); return; }
-        GameRule<?> rule = GameRule.getByName(ruleName);
-        if (rule == null) { send(ex, 404, obj("error", "Unknown gamerule: " + ruleName)); return; }
-        Boolean ok = runOnMain(() -> {
-            World world = Bukkit.getWorlds().get(0);
-            if (rule.getType() == Boolean.class)
-                return world.setGameRule((GameRule<Boolean>) rule, Boolean.parseBoolean(value));
-            if (rule.getType() == Integer.class) {
-                try { return world.setGameRule((GameRule<Integer>) rule, Integer.parseInt(value)); }
-                catch (NumberFormatException e) { return false; }
-            }
-            return false;
+        runOnMain(() -> {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule " + ruleName + " " + value);
+            return null;
         });
-        if (ok) send(ex, 200, obj("message", ruleName + " → " + value));
-        else send(ex, 400, obj("error", "Failed to set " + ruleName));
+        send(ex, 200, obj("message", ruleName + " → " + value));
     }
 
     private void handleGetModules(HttpExchange ex) throws IOException {

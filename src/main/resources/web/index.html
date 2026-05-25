@@ -438,26 +438,35 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
     <div class="scroll-area" id="sa-status" style="display:none">
       <section class="section active" id="section-status">
-        <div class="stat-grid">
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr)">
           <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">Online</span><span class="stat-ico purple"><i class="ti ti-users"></i></span></div>
-            <div class="stat-val" id="st-online">—</div>
-            <div class="stat-hint">Currently online</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">Max Players</span><span class="stat-ico green"><i class="ti ti-user-check"></i></span></div>
-            <div class="stat-val" id="st-max">—</div>
-            <div class="stat-hint">Server slots</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top"><span class="stat-label">TPS</span><span class="stat-ico yellow"><i class="ti ti-activity"></i></span></div>
-            <div class="stat-val" id="st-tps">—</div>
-            <div class="stat-hint">Target: 20.0</div>
+            <div class="stat-top"><span class="stat-label">Players</span><span class="stat-ico purple"><i class="ti ti-users"></i></span></div>
+            <div class="stat-val">
+              <span id="st-online">—</span><span style="color:var(--text-3);font-size:18px;font-weight:400;margin:0 4px">/</span><span id="st-max" style="font-size:18px;color:var(--text-2);font-weight:600">—</span>
+            </div>
+            <div class="stat-hint">Online / Max slots</div>
           </div>
           <div class="stat-card">
             <div class="stat-top"><span class="stat-label">Active Announcements</span><span class="stat-ico red"><i class="ti ti-speakerphone"></i></span></div>
             <div class="stat-val" id="st-anns">—</div>
             <div class="stat-hint">Scheduled announcements</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-chart-line"></i> TPS History <span style="color:var(--text-3);font-size:11px;font-weight:400;margin-left:2px">— last 5 min</span></span>
+            <span id="st-tps" style="font-family:var(--mono);font-size:15px;font-weight:700">—</span>
+          </div>
+          <div style="padding:10px 16px 14px;position:relative">
+            <div id="tpsYLabels" style="position:absolute;left:16px;top:10px;bottom:14px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none">
+              <span style="font-size:10px;color:var(--text-3);font-family:var(--mono)">20</span>
+              <span style="font-size:10px;color:var(--text-3);font-family:var(--mono)">15</span>
+              <span style="font-size:10px;color:var(--text-3);font-family:var(--mono)">10</span>
+              <span style="font-size:10px;color:var(--text-3);font-family:var(--mono)">5</span>
+              <span style="font-size:10px;color:var(--text-3);font-family:var(--mono)">0</span>
+            </div>
+            <canvas id="tpsChart" style="width:100%;display:block;margin-left:20px;box-sizing:border-box"></canvas>
           </div>
         </div>
 
@@ -763,6 +772,89 @@ function $(id)   { return document.getElementById(id); }
 function show(id){ document.getElementById(id).classList.add('show'); }
 function hide(id){ document.getElementById(id).classList.remove('show'); }
 
+/* ── TPS GRAPH ─────────────────────────── */
+const tpsHistory = [];
+const TPS_MAX_PTS = 20;
+
+function pushTps(val) {
+  tpsHistory.push(Math.min(val, 20));
+  if (tpsHistory.length > TPS_MAX_PTS) tpsHistory.shift();
+  drawTpsGraph();
+}
+
+function drawTpsGraph() {
+  const canvas = document.getElementById('tpsChart');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.parentElement.clientWidth - 20;
+  const cssH = 80;
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+  canvas.style.height = cssH + 'px';
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // grid lines at 5, 10, 15, 20
+  [5, 10, 15, 20].forEach(t => {
+    const y = H - (t / 20) * H;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  });
+
+  if (tpsHistory.length < 2) {
+    ctx.fillStyle = '#3e3e55';
+    ctx.font = `${11 * dpr}px Inter, system-ui`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Collecting data...', W / 2, H / 2 + 4 * dpr);
+    return;
+  }
+
+  const n   = tpsHistory.length;
+  const pad = 4 * dpr;
+  const xStep = (W - pad * 2) / (TPS_MAX_PTS - 1);
+  const xOff  = W - pad - (n - 1) * xStep;
+  const pts   = tpsHistory.map((v, i) => ({
+    x: xOff + i * xStep,
+    y: H - (v / 20) * H
+  }));
+
+  const latest = tpsHistory[n - 1];
+  const col = latest >= 18 ? '#22c55e' : latest >= 12 ? '#f59e0b' : '#ef4444';
+  const colA = latest >= 18 ? 'rgba(34,197,94,' : latest >= 12 ? 'rgba(245,158,11,' : 'rgba(239,68,68,';
+
+  // fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, H);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[n-1].x, H);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, colA + '0.18)');
+  grad.addColorStop(1, colA + '0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = col;
+  ctx.lineWidth   = 1.5 * dpr;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  // dot at latest point
+  const last = pts[n - 1];
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 3 * dpr, 0, Math.PI * 2);
+  ctx.fillStyle = col;
+  ctx.fill();
+}
+
+window.addEventListener('resize', drawTpsGraph);
+
 /* ── STATE ─────────────────────────────── */
 (function() {
   const p = new URLSearchParams(window.location.search).get('token');
@@ -859,8 +951,9 @@ async function loadStatus() {
   $('sideVer').textContent   = (d.version || '').split(' ')[0] || '—';
   const tps = parseFloat(d.tps);
   const tpsEl = $('st-tps');
-  tpsEl.textContent  = d.tps;
-  tpsEl.style.color  = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
+  tpsEl.textContent = d.tps;
+  tpsEl.style.color = tps >= 18 ? 'var(--green)' : tps >= 12 ? 'var(--yellow)' : 'var(--red)';
+  pushTps(tps);
   if (d.motdCustom && $('motdInput').value === '') {
     $('motdInput').value = d.motd;
     updateMotdPreview();
