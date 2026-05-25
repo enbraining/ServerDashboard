@@ -279,6 +279,7 @@ public class ApiHandler implements HttpHandler {
             o.addProperty("motd", customMotd.isBlank() ? Bukkit.getMotd() : customMotd);
             o.addProperty("motdCustom", !customMotd.isBlank());
             o.addProperty("version", Bukkit.getVersion());
+            o.addProperty("mcVersion", Bukkit.getMinecraftVersion());
             o.addProperty("tps", String.format("%.2f", Bukkit.getTPS()[0]));
             return o;
         });

@@ -1,5 +1,5 @@
 name: ServerDashboard
-version: '1.7.0'
+version: '1.8.0'
 main: com.serverdashboard.DashboardPlugin
 api-version: '1.21'
 description: Web dashboard for managing kicks, bans, and announcements

@@ -383,39 +383,44 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     </div>
     <nav class="nav">
       <div class="nav-group">
-        <div class="nav-group-label">General</div>
+        <div class="nav-group-label" data-i18n="grp.general">General</div>
         <div class="nav-item active" onclick="nav('status')" data-nav="status">
-          <i class="ti ti-layout-dashboard"></i> Server Status
+          <i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.status">Server Status</span>
         </div>
         <div class="nav-item" onclick="nav('players')" data-nav="players">
-          <i class="ti ti-users"></i> Players
+          <i class="ti ti-users"></i> <span data-i18n="nav.players">Players</span>
         </div>
       </div>
       <div class="nav-group">
-        <div class="nav-group-label">Management</div>
+        <div class="nav-group-label" data-i18n="grp.management">Management</div>
         <div class="nav-item" onclick="nav('bans')" data-nav="bans">
-          <i class="ti ti-ban"></i> Banned Players
+          <i class="ti ti-ban"></i> <span data-i18n="nav.bans">Banned Players</span>
         </div>
         <div class="nav-item" onclick="nav('announcements')" data-nav="announcements">
-          <i class="ti ti-speakerphone"></i> Announcements
+          <i class="ti ti-speakerphone"></i> <span data-i18n="nav.announcements">Announcements</span>
         </div>
         <div class="nav-item" onclick="nav('console')" data-nav="console">
-          <i class="ti ti-terminal-2"></i> Console
+          <i class="ti ti-terminal-2"></i> <span data-i18n="nav.console">Console</span>
         </div>
         <div class="nav-item" onclick="nav('plugins')" data-nav="plugins">
-          <i class="ti ti-puzzle"></i> Plugins
+          <i class="ti ti-puzzle"></i> <span data-i18n="nav.plugins">Plugins</span>
         </div>
         <div class="nav-item" onclick="nav('whitelist')" data-nav="whitelist">
-          <i class="ti ti-list-check"></i> Whitelist
+          <i class="ti ti-list-check"></i> <span data-i18n="nav.whitelist">Whitelist</span>
         </div>
         <div class="nav-item" onclick="nav('gamerules')" data-nav="gamerules">
-          <i class="ti ti-adjustments"></i> Game Rules
+          <i class="ti ti-adjustments"></i> <span data-i18n="nav.gamerules">Game Rules</span>
         </div>
         <div class="nav-item" onclick="nav('module-mgr')" data-nav="module-mgr">
-          <i class="ti ti-puzzle-2"></i> Modules
+          <i class="ti ti-puzzle-2"></i> <span data-i18n="nav.modules">Modules</span>
         </div>
       </div>
     </nav>
+    <div style="padding:8px;border-top:1px solid var(--border);flex-shrink:0">
+      <div class="nav-item" onclick="nav('settings')" data-nav="settings">
+        <i class="ti ti-settings"></i> <span data-i18n="nav.settings">Settings</span>
+      </div>
+    </div>
     <div class="sidebar-foot">
       <div class="conn">
         <div class="conn-dot" id="connDot"></div>
@@ -429,8 +434,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── STATUS ─────────────────────── -->
     <div id="ph-status" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Server Status</div>
-        <div class="page-sub">Real-time server info</div>
+        <div class="page-title" data-i18n="page.status.title">Server Status</div>
+        <div class="page-sub" data-i18n="page.status.sub">Real-time server info</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadStatus()"><i class="ti ti-refresh"></i> Refresh</button>
@@ -505,8 +510,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── PLAYERS ─────────────────────── -->
     <div id="ph-players" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Players</div>
-        <div class="page-sub">Currently online players</div>
+        <div class="page-title" data-i18n="page.players.title">Players</div>
+        <div class="page-sub" data-i18n="page.players.sub">Currently online players</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadPlayers()"><i class="ti ti-refresh"></i></button>
@@ -530,8 +535,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── BANS ────────────────────────── -->
     <div id="ph-bans" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Banned Players</div>
-        <div class="page-sub">Manage banned players</div>
+        <div class="page-title" data-i18n="page.bans.title">Banned Players</div>
+        <div class="page-sub" data-i18n="page.bans.sub">Manage banned players</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadBans()"><i class="ti ti-refresh"></i></button>
@@ -554,8 +559,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── ANNOUNCEMENTS ──────────────── -->
     <div id="ph-announcements" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Announcements</div>
-        <div class="page-sub">Manage auto-repeat announcements</div>
+        <div class="page-title" data-i18n="page.announcements.title">Announcements</div>
+        <div class="page-sub" data-i18n="page.announcements.sub">Manage auto-repeat announcements</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-primary btn-sm" onclick="openAnnModal()"><i class="ti ti-plus"></i> Add Announcement</button>
@@ -579,8 +584,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── CONSOLE ─────────────────────── -->
     <div id="ph-console" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Console</div>
-        <div class="page-sub">Server logs &amp; command execution</div>
+        <div class="page-title" data-i18n="page.console.title">Console</div>
+        <div class="page-sub" data-i18n="page.console.sub">Server logs &amp; command execution</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" id="autoScrollBtn" onclick="toggleAutoScroll()"><i class="ti ti-arrow-bar-to-down"></i> Auto-scroll ON</button>
@@ -606,8 +611,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── PLUGINS ────────────────────────── -->
     <div id="ph-plugins" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Plugins</div>
-        <div class="page-sub">Manage server plugins</div>
+        <div class="page-title" data-i18n="page.plugins.title">Plugins</div>
+        <div class="page-sub" data-i18n="page.plugins.sub">Manage server plugins</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadPlugins()"><i class="ti ti-refresh"></i> Refresh</button>
@@ -622,8 +627,8 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── WHITELIST ─────────────────────────── -->
     <div id="ph-whitelist" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Whitelist</div>
-        <div class="page-sub">Manage server whitelist</div>
+        <div class="page-title" data-i18n="page.whitelist.title">Whitelist</div>
+        <div class="page-sub" data-i18n="page.whitelist.sub">Manage server whitelist</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadWhitelist()"><i class="ti ti-refresh"></i></button>
@@ -664,7 +669,7 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
     <!-- ── GAMERULES ──────────────────────────── -->
     <div id="ph-gamerules" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Game Rules</div>
+        <div class="page-title" data-i18n="page.gamerules.title">Game Rules</div>
         <div class="page-sub">World: <span id="grWorldName" style="font-family:var(--mono)">—</span></div>
       </div>
       <div class="page-acts">
@@ -684,11 +689,34 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
       </section>
     </div>
 
+    <!-- ── SETTINGS ──────────────────────────── -->
+    <div id="ph-settings" class="page-head" style="display:none">
+      <div>
+        <div class="page-title" data-i18n="page.settings.title">Settings</div>
+        <div class="page-sub" data-i18n="page.settings.sub">Dashboard preferences</div>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-settings" style="display:none">
+      <section class="section active" id="section-settings">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-language"></i> <span data-i18n="label.language">Language</span></span>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="lang-btn-en" onclick="setLang('en')" style="min-width:90px;justify-content:center">English</button>
+              <button class="btn" id="lang-btn-ko" onclick="setLang('ko')" style="min-width:90px;justify-content:center">한국어</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
     <!-- ── MODULE MANAGER ───────────────────── -->
     <div id="ph-module-mgr" class="page-head" style="display:none">
       <div>
-        <div class="page-title">Modules</div>
-        <div class="page-sub">Loaded extension modules</div>
+        <div class="page-title" data-i18n="page.modules.title">Modules</div>
+        <div class="page-sub" data-i18n="page.modules.sub">Loaded extension modules</div>
       </div>
       <div class="page-acts">
         <button class="btn btn-ghost btn-sm" onclick="loadModuleMgr()"><i class="ti ti-refresh"></i> Refresh</button>
@@ -807,7 +835,7 @@ function drawTpsGraph() {
     ctx.fillStyle = '#3e3e55';
     ctx.font = `${11 * dpr}px Inter, system-ui`;
     ctx.textAlign = 'center';
-    ctx.fillText('Collecting data...', W / 2, H / 2 + 4 * dpr);
+    ctx.fillText(t('tps.collecting'), W / 2, H / 2 + 4 * dpr);
     return;
   }
 
@@ -908,7 +936,7 @@ function init() {
 }
 
 /* ── NAVIGATION ────────────────────────── */
-const SECTIONS = ['status','players','bans','announcements','console','plugins','whitelist','gamerules','module-mgr'];
+const SECTIONS = ['status','players','bans','announcements','console','plugins','whitelist','gamerules','settings','module-mgr'];
 function navTo(section) { nav(section); }
 function nav(section) {
   SECTIONS.forEach(s => {
@@ -931,6 +959,7 @@ function nav(section) {
   if (section === 'plugins')       loadPlugins();
   if (section === 'whitelist')     loadWhitelist();
   if (section === 'gamerules')     loadGamerules();
+  if (section === 'settings')      renderLangButtons();
   if (section === 'module-mgr')   loadModuleMgr();
 }
 (function() {
@@ -948,7 +977,7 @@ async function loadStatus() {
   $('st-max').textContent    = d.max;
   $('st-ver').textContent    = d.version;
   $('st-motd').innerHTML     = renderMc(d.motd || '');
-  $('sideVer').textContent   = (d.version || '').split(' ')[0] || '—';
+  $('sideVer').textContent   = d.mcVersion || d.version || '—';
   const tps = parseFloat(d.tps);
   const tpsEl = $('st-tps');
   tpsEl.textContent = d.tps;
@@ -998,8 +1027,8 @@ async function loadPlayers() {
       <td><span class="mono" style="font-size:11.5px;color:var(--text-2)">${p.uuid.substring(0,8)}…</span></td>
       <td>${opBadge}</td>
       <td><div class="btn-grp">
-        <button class="btn btn-warn btn-xs" onclick="kickPre('${esc(p.name)}')"><i class="ti ti-user-minus"></i></button>
-        <button class="btn btn-danger btn-xs" onclick="banPre('${esc(p.name)}')"><i class="ti ti-user-x"></i></button>
+        <button class="btn btn-warn btn-xs" onclick="kickPre('${esc(p.name)}')"><i class="ti ti-user-minus"></i> ${t('btn.kick')}</button>
+        <button class="btn btn-danger btn-xs" onclick="banPre('${esc(p.name)}')"><i class="ti ti-user-x"></i> ${t('btn.ban')}</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1084,7 +1113,7 @@ function appendLogs(lines) {
 function clearConsole()    { $('consoleOut').innerHTML = ''; logOffset = 0; }
 function toggleAutoScroll() {
   autoScroll = !autoScroll;
-  $('autoScrollBtn').innerHTML = `<i class="ti ti-arrow-bar-to-down"></i> Auto-scroll ${autoScroll ? 'ON' : 'OFF'}`;
+  $('autoScrollBtn').innerHTML = `<i class="ti ti-arrow-bar-to-down"></i> ${t(autoScroll ? 'btn.autoscroll_on' : 'btn.autoscroll_off')}`;
 }
 
 async function sendCmd() {
@@ -1183,7 +1212,7 @@ async function loadWhitelist() {
   if (!r.ok) { $('wlTbl').innerHTML = emptyRow(3, 'Load failed', true); return; }
   const { enabled, players } = r.data;
   $('wlEnabled').checked = enabled;
-  $('wlStatusText').textContent = enabled ? 'Only whitelisted players can join.' : 'All players can join (whitelist off).';
+  $('wlStatusText').textContent = enabled ? t('wl.on') : t('wl.off');
   $('wlCount').textContent = players.length;
   if (!players.length) {
     $('wlTbl').innerHTML = emptyRow(3, 'No players whitelisted');
@@ -1201,7 +1230,7 @@ async function whitelistToggle(enabled) {
   const r = await api('POST', '/whitelist/toggle', { enabled });
   if (r.ok) toast(r.data.message, 'success');
   else { toast(r.data?.error || 'Failed', 'error'); loadWhitelist(); }
-  $('wlStatusText').textContent = enabled ? 'Only whitelisted players can join.' : 'All players can join (whitelist off).';
+  $('wlStatusText').textContent = enabled ? t('wl.on') : t('wl.off');
 }
 
 async function whitelistAdd() {
@@ -1225,6 +1254,8 @@ async function loadGamerules() {
   if (!r.ok) { $('grBoolGrid').innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:var(--red)">Load failed</p></div>`; return; }
   const bools = r.data.filter(g => g.type === 'boolean').sort((a,b) => a.name.localeCompare(b.name));
   const ints  = r.data.filter(g => g.type === 'integer').sort((a,b) => a.name.localeCompare(b.name));
+  document.querySelector('#grBoolGrid').previousElementSibling.textContent = t('gr.bool');
+  document.querySelector('#grIntGrid').previousElementSibling.textContent = t('gr.int');
   $('grBoolGrid').innerHTML = bools.map(g => `
     <div class="plugin-card">
       <div class="plugin-top">
@@ -1464,8 +1495,110 @@ function renderMc(text) {
   return out;
 }
 
+/* ── I18N ──────────────────────────────── */
+const LANG = {
+  en: {
+    'grp.general':'General','grp.management':'Management',
+    'nav.status':'Server Status','nav.players':'Players','nav.bans':'Banned Players',
+    'nav.announcements':'Announcements','nav.console':'Console','nav.plugins':'Plugins',
+    'nav.whitelist':'Whitelist','nav.gamerules':'Game Rules','nav.modules':'Modules','nav.settings':'Settings',
+    'page.status.title':'Server Status','page.status.sub':'Real-time server info',
+    'page.players.title':'Players','page.players.sub':'Currently online players',
+    'page.bans.title':'Banned Players','page.bans.sub':'Manage banned players',
+    'page.announcements.title':'Announcements','page.announcements.sub':'Manage auto-repeat announcements',
+    'page.console.title':'Console','page.console.sub':'Server logs & command execution',
+    'page.plugins.title':'Plugins','page.plugins.sub':'Manage server plugins',
+    'page.whitelist.title':'Whitelist','page.whitelist.sub':'Manage server whitelist',
+    'page.gamerules.title':'Game Rules',
+    'page.modules.title':'Modules','page.modules.sub':'Loaded extension modules',
+    'page.settings.title':'Settings','page.settings.sub':'Dashboard preferences',
+    'label.language':'Language',
+    'stat.players':'Players','stat.hint.players':'Online / Max slots',
+    'stat.anns':'Active Announcements','stat.hint.anns':'Scheduled announcements',
+    'tps.title':'TPS History','tps.sub':'— last 5 min','tps.collecting':'Collecting data...',
+    'card.server_info':'Server Info','card.motd':'MOTD Settings',
+    'card.wl_enforcement':'Whitelist Enforcement',
+    'th.player':'Player','th.ping':'Ping','th.world':'World','th.uuid':'UUID',
+    'th.perms':'Permissions','th.actions':'Actions','th.reason':'Reason','th.source':'Source','th.expires':'Expires',
+    'btn.refresh':'Refresh','btn.kick':'Kick','btn.ban':'Ban','btn.add_ban':'Add Ban',
+    'btn.add_ann':'Add Announcement','btn.reload_all':'Reload All','btn.clear':'Clear',
+    'btn.reset_motd':'Reset to Default','btn.save':'Save','btn.connect':'Connect',
+    'btn.autoscroll_on':'Auto-scroll ON','btn.autoscroll_off':'Auto-scroll OFF',
+    'wl.on':'Only whitelisted players can join.','wl.off':'All players can join (whitelist off).',
+    'wl.players':'Whitelisted Players',
+    'gr.bool':'Boolean','gr.int':'Integer',
+    'tok.title':'Server Dashboard','tok.sub':'Enter the web.token value from your config.yml.',
+    'motd.preview':'Preview','motd.default':'Using server default MOTD',
+    'misc.loading':'Loading...',
+  },
+  ko: {
+    'grp.general':'일반','grp.management':'관리',
+    'nav.status':'서버 상태','nav.players':'플레이어','nav.bans':'차단 목록',
+    'nav.announcements':'공지','nav.console':'콘솔','nav.plugins':'플러그인',
+    'nav.whitelist':'화이트리스트','nav.gamerules':'게임 규칙','nav.modules':'모듈','nav.settings':'설정',
+    'page.status.title':'서버 상태','page.status.sub':'실시간 서버 정보',
+    'page.players.title':'플레이어','page.players.sub':'현재 접속 중인 플레이어',
+    'page.bans.title':'차단 목록','page.bans.sub':'차단된 플레이어 관리',
+    'page.announcements.title':'공지','page.announcements.sub':'자동 반복 공지 관리',
+    'page.console.title':'콘솔','page.console.sub':'서버 로그 및 명령어 실행',
+    'page.plugins.title':'플러그인','page.plugins.sub':'서버 플러그인 관리',
+    'page.whitelist.title':'화이트리스트','page.whitelist.sub':'서버 화이트리스트 관리',
+    'page.gamerules.title':'게임 규칙',
+    'page.modules.title':'모듈','page.modules.sub':'로드된 확장 모듈',
+    'page.settings.title':'설정','page.settings.sub':'대시보드 환경설정',
+    'label.language':'언어',
+    'stat.players':'플레이어','stat.hint.players':'접속 중 / 최대 슬롯',
+    'stat.anns':'활성 공지','stat.hint.anns':'예약된 공지',
+    'tps.title':'TPS 기록','tps.sub':'— 최근 5분','tps.collecting':'데이터 수집 중...',
+    'card.server_info':'서버 정보','card.motd':'MOTD 설정',
+    'card.wl_enforcement':'화이트리스트 적용',
+    'th.player':'플레이어','th.ping':'핑','th.world':'월드','th.uuid':'UUID',
+    'th.perms':'권한','th.actions':'작업','th.reason':'사유','th.source':'출처','th.expires':'만료',
+    'btn.refresh':'새로고침','btn.kick':'추방','btn.ban':'차단','btn.add_ban':'차단 추가',
+    'btn.add_ann':'공지 추가','btn.reload_all':'전체 리로드','btn.clear':'지우기',
+    'btn.reset_motd':'기본값으로','btn.save':'저장','btn.connect':'연결',
+    'btn.autoscroll_on':'자동 스크롤 켜짐','btn.autoscroll_off':'자동 스크롤 꺼짐',
+    'wl.on':'화이트리스트에 있는 플레이어만 접속 가능합니다.','wl.off':'모든 플레이어가 접속 가능합니다 (화이트리스트 꺼짐).',
+    'wl.players':'화이트리스트 플레이어',
+    'gr.bool':'불리언','gr.int':'정수',
+    'tok.title':'서버 대시보드','tok.sub':'config.yml의 web.token 값을 입력하세요.',
+    'motd.preview':'미리보기','motd.default':'서버 기본 MOTD 사용 중',
+    'misc.loading':'불러오는 중...',
+  }
+};
+
+let curLang = localStorage.getItem('sd_lang') || 'en';
+
+function t(key) { return LANG[curLang]?.[key] ?? LANG.en[key] ?? key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  renderLangButtons();
+}
+
+function setLang(lang) {
+  curLang = lang;
+  localStorage.setItem('sd_lang', lang);
+  applyLang();
+}
+
+function renderLangButtons() {
+  const en = document.getElementById('lang-btn-en');
+  const ko = document.getElementById('lang-btn-ko');
+  if (!en || !ko) return;
+  const active = 'btn btn-primary';
+  const ghost  = 'btn btn-ghost';
+  en.className = (curLang === 'en' ? active : ghost) + ' ';
+  ko.className = (curLang === 'ko' ? active : ghost) + ' ';
+  en.style.minWidth = ko.style.minWidth = '90px';
+  en.style.justifyContent = ko.style.justifyContent = 'center';
+}
+
 /* ── BOOT ──────────────────────────────── */
 checkToken();
+applyLang();
 </script>
 </body>
 </html>
