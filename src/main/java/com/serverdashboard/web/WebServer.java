@@ -163,6 +163,16 @@ public class WebServer {
 
         ex.getResponseHeaders().add("Connection", "close");
 
+        // Prevent path traversal: reject any path containing ".." or null bytes
+        if (path.contains("..") || path.contains("\0")) {
+            byte[] msg = "403 Forbidden".getBytes(StandardCharsets.UTF_8);
+            ex.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
+            ex.sendResponseHeaders(403, msg.length);
+            try (OutputStream os = ex.getResponseBody()) { os.write(msg); }
+            ex.close();
+            return;
+        }
+
         String resourcePath = "/web" + path;
         InputStream is = getClass().getResourceAsStream(resourcePath);
 

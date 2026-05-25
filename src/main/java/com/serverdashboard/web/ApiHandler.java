@@ -26,8 +26,14 @@ import java.util.concurrent.TimeoutException;
 
 public class ApiHandler implements HttpHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final int MAX_BODY_BYTES = 64 * 1024; // 64 KB
+    private static final int MAX_AUTH_FAILURES = 10;
+    private static final long AUTH_WINDOW_MS = 60_000L;
+
     private final DashboardPlugin plugin;
     private final String token;
+    // [failureCount, windowStartMs]
+    private final Map<String, long[]> authFailures = new java.util.concurrent.ConcurrentHashMap<>();
 
     public ApiHandler(DashboardPlugin plugin, String token) {
         this.plugin = plugin;
@@ -43,11 +49,19 @@ public class ApiHandler implements HttpHandler {
             return;
         }
 
+        String ip = ex.getRemoteAddress().getAddress().getHostAddress();
+        if (isRateLimited(ip)) {
+            send(ex, 429, obj("error", "Too Many Requests"));
+            return;
+        }
+
         String authHeader = ex.getRequestHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.equals("Bearer " + token)) {
+            recordAuthFailure(ip);
             send(ex, 401, obj("error", "Unauthorized"));
             return;
         }
+        authFailures.remove(ip);
 
         String path = ex.getRequestURI().getPath().replaceFirst("^/api", "");
         String method = ex.getRequestMethod();
@@ -508,9 +522,26 @@ public class ApiHandler implements HttpHandler {
     }
 
     private JsonObject readBody(HttpExchange ex) throws IOException {
-        String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        byte[] buf = ex.getRequestBody().readNBytes(MAX_BODY_BYTES + 1);
+        if (buf.length > MAX_BODY_BYTES) throw new IOException("Request body too large");
+        String body = new String(buf, StandardCharsets.UTF_8);
         if (body.isBlank()) return new JsonObject();
         return JsonParser.parseString(body).getAsJsonObject();
+    }
+
+    private boolean isRateLimited(String ip) {
+        long[] v = authFailures.get(ip);
+        if (v == null) return false;
+        if (System.currentTimeMillis() - v[1] > AUTH_WINDOW_MS) { authFailures.remove(ip); return false; }
+        return v[0] >= MAX_AUTH_FAILURES;
+    }
+
+    private void recordAuthFailure(String ip) {
+        long now = System.currentTimeMillis();
+        authFailures.compute(ip, (k, v) -> {
+            if (v == null || now - v[1] > AUTH_WINDOW_MS) return new long[]{1, now};
+            return new long[]{v[0] + 1, v[1]};
+        });
     }
 
     private String getStr(JsonObject obj, String key) {
