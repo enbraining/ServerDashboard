@@ -1,39 +1,47 @@
 package com.serverdashboard.managers;
 
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
+
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class LogManager {
     private static final int MAX_LINES = 500;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final Pattern ANSI = Pattern.compile("\\x1B\\[[;\\d]*[A-Za-z]");
 
     private final ConcurrentLinkedDeque<String> buffer = new ConcurrentLinkedDeque<>();
     private final AtomicInteger totalSeen = new AtomicInteger(0);
-    private final Handler handler;
+    private final AbstractAppender appender;
+    private final Logger rootLogger;
 
     public LogManager() {
-        handler = new Handler() {
+        appender = new AbstractAppender("SDashboard", null, null, true, Property.EMPTY_ARRAY) {
             @Override
-            public void publish(LogRecord record) {
-                if (record == null) return;
-                String time = LocalTime.now().format(TIME_FMT);
-                String level = record.getLevel().getName();
-                String message = record.getMessage() != null ? record.getMessage() : "";
+            public void append(LogEvent event) {
+                String time = LocalTime.ofInstant(
+                    Instant.ofEpochMilli(event.getTimeMillis()), ZoneId.systemDefault()
+                ).format(TIME_FMT);
+                String level = event.getLevel().name();
+                String message = ANSI.matcher(event.getMessage().getFormattedMessage()).replaceAll("");
                 buffer.addLast(time + "\t" + level + "\t" + message);
                 totalSeen.incrementAndGet();
                 while (buffer.size() > MAX_LINES) buffer.pollFirst();
             }
-            @Override public void flush() {}
-            @Override public void close() {}
         };
-        Logger.getLogger("").addHandler(handler);
+        appender.start();
+        rootLogger = (Logger) org.apache.logging.log4j.LogManager.getRootLogger();
+        rootLogger.addAppender(appender);
     }
 
     public List<String> getLines(int since) {
@@ -49,6 +57,6 @@ public class LogManager {
     public int totalSeen() { return totalSeen.get(); }
 
     public void stop() {
-        try { Logger.getLogger("").removeHandler(handler); } catch (Exception ignored) {}
+        try { rootLogger.removeAppender(appender); } catch (Exception ignored) {}
     }
 }
