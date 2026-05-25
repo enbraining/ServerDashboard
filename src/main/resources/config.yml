@@ -25,5 +25,10 @@ web:
     cert: ""
     key: ""
 
+  # Public base URL used for /dashboard login link (no trailing slash)
+  # e.g. "https://mc.example.com:8443" or "http://1.2.3.4:8080"
+  # Leave blank to default to http://localhost:<port>
+  public-url: ""
+
   # API authentication token (change this!)
   token: "changeme-please"

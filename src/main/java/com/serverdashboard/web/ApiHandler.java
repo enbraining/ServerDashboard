@@ -10,7 +10,9 @@ import com.sun.net.httpserver.HttpHandler;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.BanList;
+import org.bukkit.GameRule;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.io.*;
@@ -99,8 +101,24 @@ public class ApiHandler implements HttpHandler {
             handlePluginAction(ex, path.split("/")[2], "disable");
         } else if (path.matches("/plugins/[^/]+/reload") && method.equals("POST")) {
             handlePluginAction(ex, path.split("/")[2], "reload");
+        } else if (path.equals("/whitelist") && method.equals("GET")) {
+            handleGetWhitelist(ex);
+        } else if (path.equals("/whitelist/add") && method.equals("POST")) {
+            handleWhitelistAdd(ex);
+        } else if (path.equals("/whitelist/remove") && method.equals("POST")) {
+            handleWhitelistRemove(ex);
+        } else if (path.equals("/whitelist/toggle") && method.equals("POST")) {
+            handleWhitelistToggle(ex);
+        } else if (path.equals("/gamerules") && method.equals("GET")) {
+            handleGetGamerules(ex);
+        } else if (path.equals("/gamerules") && method.equals("POST")) {
+            handleSetGamerule(ex);
         } else if (path.equals("/modules") && method.equals("GET")) {
             handleGetModules(ex);
+        } else if (path.equals("/modules/reload") && method.equals("POST")) {
+            handleReloadAllModules(ex);
+        } else if (path.matches("/modules/[^/]+/reload") && method.equals("POST")) {
+            handleReloadModule(ex, path.split("/")[2]);
         } else if (path.startsWith("/module/")) {
             handleModuleRoute(ex, method, path.substring("/module/".length()));
         } else {
@@ -289,7 +307,7 @@ public class ApiHandler implements HttpHandler {
         }
         var lm = plugin.getLogManager();
         List<String> lines = lm.getLines(since);
-        int total = lm.size();
+        int total = lm.totalSeen();
         JsonObject resp = new JsonObject();
         resp.addProperty("total", total);
         JsonArray arr = new JsonArray();
@@ -349,6 +367,91 @@ public class ApiHandler implements HttpHandler {
         else send(ex, 200, obj("message", name + " " + action + "d."));
     }
 
+    private void handleGetWhitelist(HttpExchange ex) throws Exception {
+        JsonObject result = runOnMain(() -> {
+            JsonObject o = new JsonObject();
+            o.addProperty("enabled", Bukkit.hasWhitelist());
+            JsonArray arr = new JsonArray();
+            for (OfflinePlayer p : Bukkit.getWhitelistedPlayers()) {
+                JsonObject po = new JsonObject();
+                po.addProperty("name", p.getName() != null ? p.getName() : "Unknown");
+                po.addProperty("uuid", p.getUniqueId().toString());
+                arr.add(po);
+            }
+            o.add("players", arr);
+            return o;
+        });
+        send(ex, 200, result);
+    }
+
+    private void handleWhitelistAdd(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        String name = getStr(body, "player");
+        if (name == null || name.isBlank()) { send(ex, 400, obj("error", "player is required")); return; }
+        runOnMain(() -> { Bukkit.getOfflinePlayer(name).setWhitelisted(true); return null; });
+        send(ex, 200, obj("message", name + " added to whitelist."));
+    }
+
+    private void handleWhitelistRemove(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        String name = getStr(body, "player");
+        if (name == null || name.isBlank()) { send(ex, 400, obj("error", "player is required")); return; }
+        Boolean ok = runOnMain(() -> {
+            for (OfflinePlayer p : Bukkit.getWhitelistedPlayers()) {
+                if (name.equalsIgnoreCase(p.getName())) { p.setWhitelisted(false); return true; }
+            }
+            return false;
+        });
+        if (ok) send(ex, 200, obj("message", name + " removed from whitelist."));
+        else send(ex, 404, obj("error", name + " is not on the whitelist."));
+    }
+
+    private void handleWhitelistToggle(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        boolean enabled = body.has("enabled") && body.get("enabled").getAsBoolean();
+        runOnMain(() -> { Bukkit.setWhitelist(enabled); return null; });
+        send(ex, 200, obj("message", "Whitelist " + (enabled ? "enabled" : "disabled") + "."));
+    }
+
+    private void handleGetGamerules(HttpExchange ex) throws Exception {
+        JsonArray result = runOnMain(() -> {
+            JsonArray arr = new JsonArray();
+            World world = Bukkit.getWorlds().get(0);
+            for (GameRule<?> rule : GameRule.values()) {
+                JsonObject o = new JsonObject();
+                o.addProperty("name", rule.getName());
+                o.addProperty("type", rule.getType() == Boolean.class ? "boolean" : "integer");
+                Object val = world.getGameRuleValue(rule);
+                o.addProperty("value", val != null ? val.toString() : "");
+                arr.add(o);
+            }
+            return arr;
+        });
+        send(ex, 200, result);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleSetGamerule(HttpExchange ex) throws Exception {
+        JsonObject body = readBody(ex);
+        String ruleName = getStr(body, "rule");
+        String value    = getStr(body, "value");
+        if (ruleName == null || value == null) { send(ex, 400, obj("error", "rule and value are required")); return; }
+        GameRule<?> rule = GameRule.getByName(ruleName);
+        if (rule == null) { send(ex, 404, obj("error", "Unknown gamerule: " + ruleName)); return; }
+        Boolean ok = runOnMain(() -> {
+            World world = Bukkit.getWorlds().get(0);
+            if (rule.getType() == Boolean.class)
+                return world.setGameRule((GameRule<Boolean>) rule, Boolean.parseBoolean(value));
+            if (rule.getType() == Integer.class) {
+                try { return world.setGameRule((GameRule<Integer>) rule, Integer.parseInt(value)); }
+                catch (NumberFormatException e) { return false; }
+            }
+            return false;
+        });
+        if (ok) send(ex, 200, obj("message", ruleName + " → " + value));
+        else send(ex, 400, obj("error", "Failed to set " + ruleName));
+    }
+
     private void handleGetModules(HttpExchange ex) throws IOException {
         JsonArray arr = new JsonArray();
         for (DashboardModule m : plugin.getModuleManager().getAll()) {
@@ -358,9 +461,23 @@ public class ApiHandler implements HttpHandler {
             o.addProperty("icon", m.getIcon());
             o.addProperty("html", m.getSectionHtml());
             o.addProperty("script", m.getInitScript());
+            o.addProperty("jarName", plugin.getModuleManager().getJarName(m.getId()));
             arr.add(o);
         }
         send(ex, 200, arr);
+    }
+
+    private void handleReloadAllModules(HttpExchange ex) throws Exception {
+        int before = plugin.getModuleManager().count();
+        runOnMain(() -> { plugin.getModuleManager().reloadAll(); return null; });
+        int after = plugin.getModuleManager().count();
+        send(ex, 200, obj("message", "Reloaded: " + before + " → " + after + " module(s)."));
+    }
+
+    private void handleReloadModule(HttpExchange ex, String id) throws Exception {
+        Boolean ok = runOnMain(() -> plugin.getModuleManager().reload(id));
+        if (ok) send(ex, 200, obj("message", id + " reloaded."));
+        else send(ex, 404, obj("error", "Module not found: " + id));
     }
 
     private void handleModuleRoute(HttpExchange ex, String method, String remainder) throws Exception {

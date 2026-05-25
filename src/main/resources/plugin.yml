@@ -1,5 +1,5 @@
 name: ServerDashboard
-version: '1.0.0'
+version: '1.6.0'
 main: com.serverdashboard.DashboardPlugin
 api-version: '1.21'
 description: Web dashboard for managing kicks, bans, and announcements
@@ -7,7 +7,7 @@ authors: [ServerDashboard]
 commands:
   dashboard:
     description: ServerDashboard management command
-    usage: /dashboard <reload|reload-ssl|cert-issue|token>
+    usage: /dashboard <login|reload|reload-ssl|reload-modules|cert-issue|token>
     permission: serverdashboard.admin
 permissions:
   serverdashboard.admin:

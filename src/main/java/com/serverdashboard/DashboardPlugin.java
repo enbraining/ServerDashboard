@@ -5,6 +5,11 @@ import com.serverdashboard.managers.AnnouncementManager;
 import com.serverdashboard.managers.LogManager;
 import com.serverdashboard.managers.ModuleManager;
 import com.serverdashboard.web.WebServer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -157,6 +162,25 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
                     }
                 });
             }
+            case "login" -> {
+                String publicUrl = getConfig().getString("web.public-url", "").trim();
+                if (publicUrl.isBlank()) {
+                    int p = getConfig().getInt("web.port", 8080);
+                    publicUrl = "http://localhost:" + p;
+                }
+                String tok = getConfig().getString("web.token", "");
+                String loginUrl = publicUrl + "/?token=" + tok;
+                Component link = Component.text()
+                    .append(Component.text("[Dashboard] ", NamedTextColor.GREEN))
+                    .append(Component.text("Click to open: ", NamedTextColor.WHITE))
+                    .append(Component.text(loginUrl)
+                        .color(NamedTextColor.AQUA)
+                        .decorate(TextDecoration.UNDERLINED)
+                        .clickEvent(ClickEvent.openUrl(loginUrl))
+                        .hoverEvent(HoverEvent.showText(Component.text("Open dashboard and log in"))))
+                    .build();
+                sender.sendMessage(link);
+            }
             case "reload-modules" -> {
                 int before = moduleManager.count();
                 moduleManager.reloadAll();
@@ -172,7 +196,7 @@ public class DashboardPlugin extends JavaPlugin implements Listener {
                 sender.sendMessage("§a[Dashboard] §fNew token: §e" + newToken);
                 sender.sendMessage("§cRestart the web server for the change to take effect.");
             }
-            default -> sender.sendMessage("§cUsage: /dashboard [reload|reload-ssl|reload-modules|cert-issue|token]");
+            default -> sender.sendMessage("§cUsage: /dashboard [login|reload|reload-ssl|reload-modules|cert-issue|token]");
         }
         return true;
     }

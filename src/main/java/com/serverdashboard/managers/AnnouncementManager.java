@@ -3,6 +3,10 @@ package com.serverdashboard.managers;
 import com.serverdashboard.DashboardPlugin;
 import com.serverdashboard.models.Announcement;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -74,9 +78,17 @@ public class AnnouncementManager {
         long ticks = a.getIntervalSeconds() * 20L;
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             Component msg = LegacyComponentSerializer.legacyAmpersand().deserialize(a.getMessage());
+            msg = msg.replaceText(TextReplacementConfig.builder()
+                .match("https?://\\S+")
+                .replacement((match, builder) -> builder
+                    .clickEvent(ClickEvent.openUrl(match.group()))
+                    .hoverEvent(HoverEvent.showText(Component.text("Click to open")))
+                    .decoration(TextDecoration.UNDERLINED, true))
+                .build());
+            final Component finalMsg = msg;
             Bukkit.getOnlinePlayers().stream()
                 .filter(p -> a.getPermission() == null || p.hasPermission(a.getPermission()))
-                .forEach(p -> p.sendMessage(msg));
+                .forEach(p -> p.sendMessage(finalMsg));
         }, ticks, ticks);
         tasks.put(a.getId(), task);
     }

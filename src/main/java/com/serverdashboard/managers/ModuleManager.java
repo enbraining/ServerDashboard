@@ -105,6 +105,19 @@ public class ModuleManager {
         return lm != null ? lm.module : null;
     }
 
+    public String getJarName(String id) {
+        LoadedModule lm = modules.get(id);
+        return lm != null ? lm.jar.getName() : null;
+    }
+
+    public boolean reload(String id) {
+        LoadedModule lm = modules.get(id);
+        if (lm == null) return false;
+        File jar = lm.jar;
+        unload(id);
+        return loadJar(jar);
+    }
+
     public int count() { return modules.size(); }
 
     private record LoadedModule(DashboardModule module, URLClassLoader classLoader, File jar) {}

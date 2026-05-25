@@ -405,6 +405,15 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
         <div class="nav-item" onclick="nav('plugins')" data-nav="plugins">
           <i class="ti ti-puzzle"></i> Plugins
         </div>
+        <div class="nav-item" onclick="nav('whitelist')" data-nav="whitelist">
+          <i class="ti ti-list-check"></i> Whitelist
+        </div>
+        <div class="nav-item" onclick="nav('gamerules')" data-nav="gamerules">
+          <i class="ti ti-adjustments"></i> Game Rules
+        </div>
+        <div class="nav-item" onclick="nav('module-mgr')" data-nav="module-mgr">
+          <i class="ti ti-puzzle-2"></i> Modules
+        </div>
       </div>
     </nav>
     <div class="sidebar-foot">
@@ -601,6 +610,88 @@ code  { font-family: var(--mono); font-size:.9em; background: var(--surface-3); 
       </section>
     </div>
 
+    <!-- ── WHITELIST ─────────────────────────── -->
+    <div id="ph-whitelist" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">Whitelist</div>
+        <div class="page-sub">Manage server whitelist</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadWhitelist()"><i class="ti ti-refresh"></i></button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-whitelist" style="display:none">
+      <section class="section active" id="section-whitelist">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <div style="font-weight:600;font-size:13.5px">Whitelist Enforcement</div>
+              <div style="font-size:12px;color:var(--text-2);margin-top:3px" id="wlStatusText">Loading...</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="wlEnabled" onchange="whitelistToggle(this.checked)">
+              <div class="tgl-track"></div><div class="tgl-thumb"></div>
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title"><i class="ti ti-users"></i> Whitelisted Players &nbsp;<span id="wlCount" class="badge badge-purple">0</span></span>
+            <div style="display:flex;gap:6px">
+              <input class="form-ctrl" type="text" id="wlAddInput" placeholder="Player name" style="width:155px;padding:5px 9px" onkeydown="if(event.key==='Enter')whitelistAdd()">
+              <button class="btn btn-primary btn-sm" onclick="whitelistAdd()"><i class="ti ti-plus"></i> Add</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Player</th><th>UUID</th><th>Actions</th></tr></thead>
+              <tbody id="wlTbl"><tr><td colspan="3"><div class="empty"><i class="ti ti-loader"></i><p>Loading...</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── GAMERULES ──────────────────────────── -->
+    <div id="ph-gamerules" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">Game Rules</div>
+        <div class="page-sub">World: <span id="grWorldName" style="font-family:var(--mono)">—</span></div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadGamerules()"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-gamerules" style="display:none">
+      <section class="section active" id="section-gamerules">
+        <div style="margin-bottom:18px">
+          <div style="font-size:10.5px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Boolean</div>
+          <div id="grBoolGrid" class="plugin-grid"><div class="empty"><i class="ti ti-loader"></i><p>Loading...</p></div></div>
+        </div>
+        <div>
+          <div style="font-size:10.5px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Integer</div>
+          <div id="grIntGrid" class="plugin-grid"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── MODULE MANAGER ───────────────────── -->
+    <div id="ph-module-mgr" class="page-head" style="display:none">
+      <div>
+        <div class="page-title">Modules</div>
+        <div class="page-sub">Loaded extension modules</div>
+      </div>
+      <div class="page-acts">
+        <button class="btn btn-ghost btn-sm" onclick="loadModuleMgr()"><i class="ti ti-refresh"></i> Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="reloadAllModules()"><i class="ti ti-reload"></i> Reload All</button>
+      </div>
+    </div>
+    <div class="scroll-area" id="sa-module-mgr" style="display:none">
+      <section class="section active" id="section-module-mgr">
+        <div id="moduleMgrList"><div class="empty"><i class="ti ti-loader"></i><p>Loading...</p></div></div>
+      </section>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app -->
 
@@ -673,6 +764,10 @@ function show(id){ document.getElementById(id).classList.add('show'); }
 function hide(id){ document.getElementById(id).classList.remove('show'); }
 
 /* ── STATE ─────────────────────────────── */
+(function() {
+  const p = new URLSearchParams(window.location.search).get('token');
+  if (p) { localStorage.setItem('sd_token', p); history.replaceState({}, '', window.location.pathname); }
+})();
 let token = localStorage.getItem('sd_token') || '';
 let curNav = 'status';
 let refreshTimer = null;
@@ -721,7 +816,7 @@ function init() {
 }
 
 /* ── NAVIGATION ────────────────────────── */
-const SECTIONS = ['status','players','bans','announcements','console','plugins'];
+const SECTIONS = ['status','players','bans','announcements','console','plugins','whitelist','gamerules','module-mgr'];
 function navTo(section) { nav(section); }
 function nav(section) {
   SECTIONS.forEach(s => {
@@ -742,6 +837,9 @@ function nav(section) {
   if (section === 'console')       startLogPoll();
   else                             stopLogPoll();
   if (section === 'plugins')       loadPlugins();
+  if (section === 'whitelist')     loadWhitelist();
+  if (section === 'gamerules')     loadGamerules();
+  if (section === 'module-mgr')   loadModuleMgr();
 }
 (function() {
   SECTIONS.forEach(s => { const ph=$('ph-'+s),sa=$('sa-'+s); if(ph)ph.style.display='none'; if(sa)sa.style.display='none'; });
@@ -984,6 +1082,129 @@ async function delAnn(id) {
   const r=await api('DELETE',`/announcements/${id}`);
   if(r.ok){toast('Deleted.','success');loadAnnouncements();}
   else toast(r.data?.error||'Delete failed','error');
+}
+
+/* ── WHITELIST ─────────────────────────── */
+async function loadWhitelist() {
+  const r = await api('GET', '/whitelist');
+  if (!r.ok) { $('wlTbl').innerHTML = emptyRow(3, 'Load failed', true); return; }
+  const { enabled, players } = r.data;
+  $('wlEnabled').checked = enabled;
+  $('wlStatusText').textContent = enabled ? 'Only whitelisted players can join.' : 'All players can join (whitelist off).';
+  $('wlCount').textContent = players.length;
+  if (!players.length) {
+    $('wlTbl').innerHTML = emptyRow(3, 'No players whitelisted');
+    return;
+  }
+  const sorted = players.slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  $('wlTbl').innerHTML = sorted.map(p => `<tr>
+    <td><strong>${esc(p.name)}</strong></td>
+    <td><span class="mono" style="font-size:11.5px;color:var(--text-2)">${p.uuid.substring(0,8)}…</span></td>
+    <td><button class="btn btn-danger btn-xs" onclick="whitelistRemove('${esc(p.name)}')"><i class="ti ti-trash"></i> Remove</button></td>
+  </tr>`).join('');
+}
+
+async function whitelistToggle(enabled) {
+  const r = await api('POST', '/whitelist/toggle', { enabled });
+  if (r.ok) toast(r.data.message, 'success');
+  else { toast(r.data?.error || 'Failed', 'error'); loadWhitelist(); }
+  $('wlStatusText').textContent = enabled ? 'Only whitelisted players can join.' : 'All players can join (whitelist off).';
+}
+
+async function whitelistAdd() {
+  const name = $('wlAddInput').value.trim();
+  if (!name) return;
+  const r = await api('POST', '/whitelist/add', { player: name });
+  if (r.ok) { toast(r.data.message, 'success'); $('wlAddInput').value = ''; loadWhitelist(); }
+  else toast(r.data?.error || 'Failed', 'error');
+}
+
+async function whitelistRemove(name) {
+  if (!confirm(`Remove ${name} from whitelist?`)) return;
+  const r = await api('POST', '/whitelist/remove', { player: name });
+  if (r.ok) { toast(r.data.message, 'success'); loadWhitelist(); }
+  else toast(r.data?.error || 'Failed', 'error');
+}
+
+/* ── GAMERULES ─────────────────────────── */
+async function loadGamerules() {
+  const r = await api('GET', '/gamerules');
+  if (!r.ok) { $('grBoolGrid').innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:var(--red)">Load failed</p></div>`; return; }
+  const bools = r.data.filter(g => g.type === 'boolean').sort((a,b) => a.name.localeCompare(b.name));
+  const ints  = r.data.filter(g => g.type === 'integer').sort((a,b) => a.name.localeCompare(b.name));
+  $('grBoolGrid').innerHTML = bools.map(g => `
+    <div class="plugin-card">
+      <div class="plugin-top">
+        <div class="plugin-name" style="font-size:12.5px">${esc(g.name)}</div>
+        <label class="toggle">
+          <input type="checkbox" ${g.value === 'true' ? 'checked' : ''} onchange="setGamerule('${esc(g.name)}', this.checked.toString())">
+          <div class="tgl-track"></div><div class="tgl-thumb"></div>
+        </label>
+      </div>
+    </div>`).join('');
+  $('grIntGrid').innerHTML = ints.map(g => `
+    <div class="plugin-card">
+      <div class="plugin-name" style="font-size:12.5px;margin-bottom:9px">${esc(g.name)}</div>
+      <div style="display:flex;gap:6px">
+        <input type="number" class="form-ctrl" id="gr-${esc(g.name)}" value="${esc(g.value)}" style="flex:1;padding:5px 9px"
+          onkeydown="if(event.key==='Enter')setGamerule('${esc(g.name)}',this.value)">
+        <button class="btn btn-primary btn-xs" onclick="setGamerule('${esc(g.name)}',document.getElementById('gr-${esc(g.name)}').value)">
+          <i class="ti ti-check"></i>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+async function setGamerule(rule, value) {
+  const r = await api('POST', '/gamerules', { rule, value });
+  if (r.ok) toast(r.data.message, 'success');
+  else toast(r.data?.error || 'Failed', 'error');
+}
+
+/* ── MODULE MANAGER ────────────────────── */
+async function loadModuleMgr() {
+  const el = $('moduleMgrList');
+  const r = await api('GET', '/modules');
+  if (!r.ok) {
+    el.innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:var(--red)">Load failed</p></div>`;
+    return;
+  }
+  if (!r.data.length) {
+    el.innerHTML = `<div class="empty"><i class="ti ti-puzzle-2"></i><p>No modules loaded. Drop a JAR into <code>plugins/ServerDashboard/modules/</code> and reload.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="plugin-grid">${r.data.map(m => `
+    <div class="plugin-card">
+      <div class="plugin-top">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="stat-ico purple" style="width:32px;height:32px;border-radius:7px;flex-shrink:0">
+            <i class="ti ${esc(m.icon)}"></i>
+          </div>
+          <div>
+            <div class="plugin-name">${esc(m.name)}</div>
+            <div class="plugin-ver">${esc(m.id)}</div>
+          </div>
+        </div>
+        <span class="badge badge-green">Loaded</span>
+      </div>
+      <div class="plugin-desc mono" style="font-size:11.5px">${esc(m.jarName || '—')}</div>
+      <div class="plugin-foot">
+        <span></span>
+        <button class="btn btn-ghost btn-xs" onclick="reloadModule('${esc(m.id)}')"><i class="ti ti-reload"></i> Reload</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function reloadModule(id) {
+  const r = await api('POST', `/modules/${encodeURIComponent(id)}/reload`);
+  if (r.ok) { toast(r.data.message + ' — refresh the page to apply changes.', 'success'); loadModuleMgr(); }
+  else toast(r.data?.error || 'Reload failed', 'error');
+}
+
+async function reloadAllModules() {
+  const r = await api('POST', '/modules/reload');
+  if (r.ok) { toast(r.data.message + ' — refresh the page to apply changes.', 'success'); loadModuleMgr(); }
+  else toast(r.data?.error || 'Reload failed', 'error');
 }
 
 /* ── MODULES ───────────────────────────── */
