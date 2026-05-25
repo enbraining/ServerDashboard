@@ -72,8 +72,9 @@ public class ApiHandler implements HttpHandler {
         try {
             route(ex, method, path);
         } catch (Exception e) {
-            plugin.getLogger().warning("API error: " + e.getMessage());
-            send(ex, 500, obj("error", e.getMessage()));
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            plugin.getLogger().warning("API error: " + msg);
+            try { send(ex, 500, obj("error", msg)); } catch (Exception ignored) {}
         }
     }
 
@@ -502,8 +503,11 @@ public class ApiHandler implements HttpHandler {
         try {
             m.handleRoute(subPath, method, ex);
         } catch (Exception e) {
-            plugin.getLogger().warning("[Modules] Route error in '" + moduleId + "': " + e.getMessage());
-            send(ex, 500, obj("error", e.getMessage()));
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            // Client disconnected mid-transfer — not an error worth logging
+            if (msg.contains("Broken pipe") || msg.contains("Connection reset")) return;
+            plugin.getLogger().warning("[Modules] Route error in '" + moduleId + "': " + msg);
+            try { send(ex, 500, obj("error", msg)); } catch (Exception ignored) {}
         }
     }
 
