@@ -56,7 +56,10 @@ public class ApiHandler implements HttpHandler {
         }
 
         String authHeader = ex.getRequestHeaders().getFirst("Authorization");
-        if (authHeader == null || !authHeader.equals("Bearer " + token)) {
+        String queryToken = queryParam(ex.getRequestURI().getQuery(), "t");
+        boolean authed = ("Bearer " + token).equals(authHeader)
+                      || (queryToken != null && queryToken.equals(token));
+        if (!authed) {
             recordAuthFailure(ip);
             send(ex, 401, obj("error", "Unauthorized"));
             return;
@@ -542,6 +545,14 @@ public class ApiHandler implements HttpHandler {
             if (v == null || now - v[1] > AUTH_WINDOW_MS) return new long[]{1, now};
             return new long[]{v[0] + 1, v[1]};
         });
+    }
+
+    private static String queryParam(String query, String key) {
+        if (query == null) return null;
+        for (String part : query.split("&")) {
+            if (part.startsWith(key + "=")) return part.substring(key.length() + 1);
+        }
+        return null;
     }
 
     private String getStr(JsonObject obj, String key) {
